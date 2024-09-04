@@ -1,7 +1,11 @@
 package ru.practicum.shareit.model.item.dto;
 
 /**
- * TODO Sprint add-controllers.
+ * DTO вещь
  */
-public class ItemDto {
+public record ItemDto(
+        Long id,
+        String name,
+        String description,
+        Boolean available) {
 }

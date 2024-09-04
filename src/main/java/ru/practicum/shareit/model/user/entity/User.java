@@ -17,6 +17,7 @@ import lombok.experimental.FieldDefaults;
 public class User {
     @DecimalMin(value = "0", message = "ID не может быть отрицательным значением")
     final Long id;
+
     String name;
 
     @Email(message = "Неверный формат для email")

@@ -1,6 +1,8 @@
 package ru.practicum.shareit.model.user.controller;
 
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,17 +18,18 @@ import ru.practicum.shareit.model.user.dto.UserDto;
 import ru.practicum.shareit.model.user.service.UserService;
 
 /**
- * TODO Sprint add-controllers.
+ * Контроллер обработки REST-запросов для работы с пользователями
  */
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 @RestController
 @RequestMapping(path = "/users")
-@RequiredArgsConstructor
 public class UserController {
-    private final UserService users;
+    UserService users;
 
     @GetMapping("/{user-id}")
-    public UserDto getUser(@PathVariable(name = "user-id") Long userId) {
+    public UserDto get(@PathVariable(name = "user-id") Long userId) {
         log.info("Запрос => GET user ID[{}]", userId);
         var user = users.get(userId);
         log.info("Ответ <= '200 OK' {}", user);
@@ -35,23 +38,24 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public UserDto createUser(@RequestBody UserDto userDto) {
+    public UserDto add(@RequestBody UserDto userDto) {
         log.info("Запрос => POST {}", userDto);
-        var response = users.create(userDto);
+        var response = users.add(userDto);
         log.info("Ответ <= '201 Created' {}", response);
         return response;
     }
 
     @PatchMapping("/{user-id}")
-    public UserDto updateUser(@RequestBody UserDto userDto, @PathVariable(name = "user-id") Long userId) {
-        log.info("Запрос => PATCH {}", userDto);
+    public UserDto update(@RequestBody UserDto userDto,
+                          @PathVariable(name = "user-id") Long userId) {
+        log.info("Запрос => PATCH user ID[{}] {}", userId, userDto);
         var response = users.update(userDto, userId);
         log.info("Ответ <= '200 OK' {}", response);
         return response;
     }
 
     @DeleteMapping("/{user-id}")
-    public void deleteUser(@PathVariable(name = "user-id") Long userId) {
+    public void delete(@PathVariable(name = "user-id") Long userId) {
         log.info("Запрос => DELETE user ID[{}]", userId);
         users.delete(userId);
         log.info("Ответ <= '200 OK'");

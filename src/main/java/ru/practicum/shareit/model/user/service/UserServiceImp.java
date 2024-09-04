@@ -5,55 +5,70 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.model.user.dto.UserDto;
-import ru.practicum.shareit.model.user.mapper.UserMapper;
 import ru.practicum.shareit.model.user.entity.User;
+import ru.practicum.shareit.model.user.mapper.UserMapperBase;
 import ru.practicum.shareit.model.user.repository.UserRepository;
 import ru.practicum.shareit.validate.EntityValidate;
 
+/**
+ * Реализация интерфейса {@link UserService} для работы с пользователями
+ */
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImp implements UserService {
     UserRepository users;
-    UserMapper mapper;
+    UserMapperBase mapper;
     EntityValidate validator;
+    static final String USER_UNKNOWN = "Безымянный пользователь ";
 
     /**
-     * @param id
-     * @return
+     * Получение пользователя по его идентификатору
+     *
+     * @param userId идентификатор пользователя
+     * @return DTO пользователя {@link UserDto}
      */
     @Override
-    public UserDto get(Long id) {
-        var user = users.get(id);
+    public UserDto get(Long userId) {
+        var user = users.get(userId);
         return mapper.toUserDto(user);
     }
 
     /**
-     * @param userDto
-     * @return
+     * Добавление пользователя
+     *
+     * @param userDto {@link UserDto} с необходимыми установленными полями
+     * @return DTO пользователя {@link UserDto}
      */
     @Override
-    public UserDto create(UserDto userDto) {
-        var user = (User) validator.validate(mapper.toUser(userDto));
-        return mapper.toUserDto(users.create(user));
+    public UserDto add(UserDto userDto) {
+        var data = (User) validator.validate(mapper.toUser(userDto));
+        if (data.getName() == null) {
+            data.setName(USER_UNKNOWN);
+        }
+        return mapper.toUserDto(users.add(data));
     }
 
     /**
-     * @param userDto
-     * @return
+     * Обновление существующего пользователя
+     *
+     * @param userDto {@link UserDto} с необходимыми установленными полями
+     * @return DTO пользователя {@link UserDto}
      */
     @Override
-    public UserDto update(UserDto userDto, Long id) {
-        var sample = mapper.toUser((UserDto) validator.validate(userDto));
-        return mapper.toUserDto(users.update(sample, id));
+    public UserDto update(UserDto userDto, Long userId) {
+        var data = mapper.toUser((UserDto) validator.validate(userDto));
+        return mapper.toUserDto(users.update(data, userId));
     }
 
     /**
-     * @param id
+     * Удаление пользователя
+     *
+     * @param userId идентификатор пользователя
      */
     @Override
-    public void delete(Long id) {
-        users.delete(id);
+    public void delete(Long userId) {
+        users.delete(userId);
     }
 
 }
