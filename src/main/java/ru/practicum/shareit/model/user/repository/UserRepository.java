@@ -2,14 +2,41 @@ package ru.practicum.shareit.model.user.repository;
 
 import ru.practicum.shareit.model.user.entity.User;
 
+/**
+ * Интерфейс репозиториев для работы с пользователем
+ */
 public interface UserRepository {
 
-    public User get(Long id);
+    /**
+     * Метод возвращает пользователя из репозитория
+     *
+     * @param id идентификатор пользователя в репозитории
+     * @return искомый пользователь
+     */
+    User get(Long id);
 
-    public User create(User user);
+    /**
+     * Метод добавляет пользователя в репозиторий
+     *
+     * @param user добавляемый пользователь
+     * @return этот же пользователь с установленным репозиторием идентификатором
+     */
+    User add(User user);
 
-    public User update(User user, Long id);
+    /**
+     * Метод обновляет необходимые поля существующего пользователя в репозитории
+     *
+     * @param user набор необходимых полей для обновления
+     * @param id идентификатор пользователя в репозитории
+     * @return пользователь из репозитория с обновленными полями
+     */
+    User update(User user, Long id);
 
-    public void delete(Long id);
+    /**
+     * Метод удаляет пользователя из репозитория
+     *
+     * @param id идентификатор пользователя в репозитории
+     */
+    void delete(Long id);
 
 }

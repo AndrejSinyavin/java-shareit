@@ -17,26 +17,28 @@ import java.util.Set;
 public class EntityValidator implements EntityValidate {
     static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     static String VALIDATION_ERROR = "Ошибка валидации";
+    static String SERVICE_FAILURE = "Сервис не смог проверить запрос ";
+    static String INCORRECT_FIELDS = "Некорректные поля в запросе";
 
     @Override
-    public Object validate(Object entity) {
+    public Object validate(Object data) {
         Set<ConstraintViolation<Object>> violations;
         Map<String, String> errors = new LinkedHashMap<>();
         try {
-            violations = validator.validate(entity);
+            violations = validator.validate(data);
         } catch (Exception e) {
             throw new EntityValidateException(
-                    this.getClass().getSimpleName(), VALIDATION_ERROR, "Сервис не смог проверить запрос ", errors);
+                    this.getClass().getSimpleName(), VALIDATION_ERROR, SERVICE_FAILURE, errors);
         }
         if (!violations.isEmpty()) {
-            errors.put(entity.getClass().getSimpleName(), VALIDATION_ERROR);
+            errors.put(data.getClass().getSimpleName(), VALIDATION_ERROR);
             for (var violation : violations) {
                 errors.put(violation.getPropertyPath().toString(), violation.getMessage());
             }
             throw new EntityValidateException(
-                    this.getClass().getSimpleName(), VALIDATION_ERROR, "Некорректные поля в запросе", errors);
+                    this.getClass().getSimpleName(), VALIDATION_ERROR, INCORRECT_FIELDS, errors);
         }
-        return entity;
+        return data;
     }
 
 }
