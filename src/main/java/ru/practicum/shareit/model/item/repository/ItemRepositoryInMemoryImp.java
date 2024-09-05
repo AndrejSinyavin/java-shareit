@@ -118,7 +118,7 @@ public class ItemRepositoryInMemoryImp implements ItemRepository {
             return List.of();
         }
         return items.values().stream()
-                .filter(item -> item.getAvailable() &
+                .filter(item -> item.getAvailable() &&
                         (item.getName().toLowerCase().contains(searchString.toLowerCase()) ||
                                 item.getDescription().toLowerCase().contains(searchString.toLowerCase())
                         )
