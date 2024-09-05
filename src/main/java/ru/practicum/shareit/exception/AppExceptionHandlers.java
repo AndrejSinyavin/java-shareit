@@ -3,7 +3,6 @@ package ru.practicum.shareit.exception;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -23,13 +22,14 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestControllerAdvice
 public class AppExceptionHandlers {
-    static String BLANK = " ";
+    static String BLANK = ". ";
     static String BAD_REQUEST = "'400 Bad Request' ";
     static String CONFLICT = "'409 Conflict' ";
     static String NOT_FOUND = "'404 Not Found' ";
+    static String FORBIDDEN = "'403 Forbidden' ";
     static String INTERNAL_SERVER_ERROR = "'500 Internal Server Error' ";
     static String NOT_READABLE_BODY = "Тело запроса некорректное или отсутствует.";
-    static String INCORRECT_REQUEST = "Неправильные или отсутствующие в запросе поля, заголовки, переменные в пути.";
+    static String INCORRECT_REQUEST = "Неправильные или отсутствующие в запросе поля, заголовки, переменные пути.";
     static String INCORRECT_FIELDS = "Обнаружены некорректные параметры в запросе.";
     static String ENTITY_NOT_FOUND = "Не найден объект, необходимый для выполнения запроса.";
     static String SERVER_ERROR = "Сервер не смог обработать запрос.";
@@ -66,6 +66,19 @@ public class AppExceptionHandlers {
     public ErrorResponse handleConflictRequestResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FOUR, CONFLICT, e.getMessage(), e.getError(), e.getStackTrace());
         return new ErrorResponse(CONFLICT, e.getMessage().concat(BLANK).concat(e.getError()));
+    }
+
+    /**
+     * Обработчик исключений для ответов FORBIDDEN.
+     *
+     * @param e перехваченное исключение
+     * @return стандартный API-ответ об ошибке ErrorResponse с описанием ошибки и вероятных причинах
+     */
+    @ExceptionHandler({EntityAccessDeniedException.class})
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleAccessDeniedResponse(final AppException e) {
+        log.warn(LOG_RESPONSE_FOUR, FORBIDDEN, e.getMessage(), e.getError(), e.getStackTrace());
+        return new ErrorResponse(FORBIDDEN, e.getMessage().concat(BLANK).concat(e.getError()));
     }
 
     /**
@@ -141,7 +154,7 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleInternalServerFailureResponse(final Throwable e) {
         log.error(INTERNAL_SERVER_ERROR.concat(SERVER_FAILURE).concat(Arrays.toString(e.getStackTrace())));
-        return new ErrorResponse(SERVER_FAILURE, e.getLocalizedMessage().concat(Arrays.toString(e.getStackTrace())));
+        return new ErrorResponse(INTERNAL_SERVER_ERROR.concat(SERVER_FAILURE), e.getMessage());
     }
 
 }

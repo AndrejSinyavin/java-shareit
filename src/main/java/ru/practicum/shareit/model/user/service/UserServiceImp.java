@@ -20,13 +20,13 @@ public class UserServiceImp implements UserService {
     UserRepository users;
     UserMapperBase mapper;
     EntityValidate validator;
-    static final String USER_UNKNOWN = "Безымянный пользователь ";
+    static final String USER_UNKNOWN = "Пользователь";
 
     /**
-     * Получение пользователя по его идентификатору
+     * Получение 'пользователя' по его идентификатору
      *
      * @param userId идентификатор пользователя
-     * @return DTO пользователя {@link UserDto}
+     * @return {@link UserDto} со всеми полями
      */
     @Override
     public UserDto get(Long userId) {
@@ -35,25 +35,27 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Добавление пользователя
+     * Добавление 'пользователя'
      *
      * @param userDto {@link UserDto} с необходимыми установленными полями
-     * @return DTO пользователя {@link UserDto}
+     * @return {@link UserDto} со всеми полями и установленным ID
      */
     @Override
     public UserDto add(UserDto userDto) {
         var data = (User) validator.validate(mapper.toUser(userDto));
-        if (data.getName() == null) {
+        String name = data.getName();
+        if (name == null || name.isBlank()) {
             data.setName(USER_UNKNOWN);
         }
         return mapper.toUserDto(users.add(data));
     }
 
     /**
-     * Обновление существующего пользователя
+     * Обновление существующего 'пользователя'
      *
      * @param userDto {@link UserDto} с необходимыми установленными полями
-     * @return DTO пользователя {@link UserDto}
+     * @param userId идентификатор 'пользователя'
+     * @return {@link UserDto} со всеми полями
      */
     @Override
     public UserDto update(UserDto userDto, Long userId) {
@@ -62,9 +64,9 @@ public class UserServiceImp implements UserService {
     }
 
     /**
-     * Удаление пользователя
+     * Удаление 'пользователя'
      *
-     * @param userId идентификатор пользователя
+     * @param userId идентификатор 'пользователя'
      */
     @Override
     public void delete(Long userId) {
