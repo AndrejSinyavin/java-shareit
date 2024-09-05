@@ -7,27 +7,24 @@ import ru.practicum.shareit.model.item.entity.Item;
 @Component
 public class ItemMapper implements ItemMapperBase {
 
-    /**
-     * * @param itemDto
-     * @return
-     */
     @Override
     public Item toItem(ItemDto itemDto) {
         return new Item(
-                itemDto.id(),
-                itemDto.name(),
-                itemDto.description(),
-                itemDto.available(),
+                null,
+                itemDto.getName(),
+                itemDto.getDescription(),
+                itemDto.getAvailable(),
                 null,
                 null);
     }
 
-    /**
-     * * @param item
-     * @return
-     */
     @Override
     public ItemDto toItemDto(Item item) {
-        return new ItemDto(item.getId(), item.getName(), item.getDescription(), item.getAvailable());
+        return new ItemDto(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable());
     }
+
 }

@@ -18,7 +18,7 @@ import ru.practicum.shareit.model.user.dto.UserDto;
 import ru.practicum.shareit.model.user.service.UserService;
 
 /**
- * Контроллер обработки REST-запросов для работы с пользователями
+ * Контроллер обработки REST-запросов для работы с 'пользователями'
  */
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -26,39 +26,41 @@ import ru.practicum.shareit.model.user.service.UserService;
 @RestController
 @RequestMapping(path = "/users")
 public class UserController {
+    static String RESPONSE_OK = "Ответ: '200 OK' {} ";
+    static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     UserService users;
 
     @GetMapping("/{user-id}")
     public UserDto get(@PathVariable(name = "user-id") Long userId) {
-        log.info("Запрос => GET user ID[{}]", userId);
-        var user = users.get(userId);
-        log.info("Ответ <= '200 OK' {}", user);
-        return user;
+        log.info("Запрос GET: получить пользователя ID[{}]", userId);
+        var response = users.get(userId);
+        log.info(RESPONSE_OK, response);
+        return response;
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UserDto add(@RequestBody UserDto userDto) {
-        log.info("Запрос => POST {}", userDto);
+        log.info("Запрос POST: создать пользователя {}", userDto);
         var response = users.add(userDto);
-        log.info("Ответ <= '201 Created' {}", response);
+        log.info(RESPONSE_CREATED, response);
         return response;
     }
 
     @PatchMapping("/{user-id}")
     public UserDto update(@RequestBody UserDto userDto,
                           @PathVariable(name = "user-id") Long userId) {
-        log.info("Запрос => PATCH user ID[{}] {}", userId, userDto);
+        log.info("Запрос PATCH: обновить поля {} у пользователя ID[{}]", userId, userDto);
         var response = users.update(userDto, userId);
-        log.info("Ответ <= '200 OK' {}", response);
+        log.info(RESPONSE_OK, response);
         return response;
     }
 
     @DeleteMapping("/{user-id}")
     public void delete(@PathVariable(name = "user-id") Long userId) {
-        log.info("Запрос => DELETE user ID[{}]", userId);
+        log.info("Запрос DELETE удалить пользователя ID[{}]", userId);
         users.delete(userId);
-        log.info("Ответ <= '200 OK'");
+        log.info(RESPONSE_OK);
     }
 
 }

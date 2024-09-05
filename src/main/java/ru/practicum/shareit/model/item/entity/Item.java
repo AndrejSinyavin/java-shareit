@@ -8,29 +8,29 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.model.request.ItemRequest;
-import ru.practicum.shareit.model.user.entity.User;
+import ru.practicum.shareit.validate.Validated;
 
 /**
- * Сущность вещь
+ * Сущность 'вещь'
  */
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Item {
+public class Item implements Validated {
     @DecimalMin(value = "0", message = "ID не может быть отрицательным значением")
     final Long id;
 
-    @NotBlank(message = "Отсутствует название вещи")
+    @NotBlank(message = "Не указано название вещи")
     String name;
 
-    @NotBlank(message = "Отсутствует описание вещи")
+    @NotBlank(message = "Не указано описание вещи")
     String description;
 
-    @NotNull(message = "Не определена доступность вещи")
+    @NotNull(message = "Не указана доступность вещи")
     Boolean available;
 
-    @NotNull(message = "Отсутствует владелец вещи")
-    User owner;
+    @NotNull(message = "Не указан владелец вещи")
+    Long owner;
 
     ItemRequest request;
 }
