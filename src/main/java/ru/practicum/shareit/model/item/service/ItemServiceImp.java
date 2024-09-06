@@ -9,7 +9,7 @@ import ru.practicum.shareit.model.item.entity.Item;
 import ru.practicum.shareit.model.item.mapper.ItemMapperBase;
 import ru.practicum.shareit.model.item.repository.ItemRepository;
 import ru.practicum.shareit.model.user.repository.UserRepository;
-import ru.practicum.shareit.validate.EntityValidate;
+import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Collection;
 
@@ -23,7 +23,7 @@ public class ItemServiceImp implements ItemService {
     ItemRepository items;
     UserRepository users;
     ItemMapperBase mapper;
-    EntityValidate validator;
+    CustomEntityValidator validator;
 
     /**
      * Добавление 'предмета'

@@ -8,7 +8,7 @@ import ru.practicum.shareit.model.user.dto.UserDto;
 import ru.practicum.shareit.model.user.entity.User;
 import ru.practicum.shareit.model.user.mapper.UserMapperBase;
 import ru.practicum.shareit.model.user.repository.UserRepository;
-import ru.practicum.shareit.validate.EntityValidate;
+import ru.practicum.shareit.validation.CustomEntityValidator;
 
 /**
  * Реализация интерфейса {@link UserService} для работы с пользователями
@@ -19,7 +19,7 @@ import ru.practicum.shareit.validate.EntityValidate;
 public class UserServiceImp implements UserService {
     UserRepository users;
     UserMapperBase mapper;
-    EntityValidate validator;
+    CustomEntityValidator validator;
     static final String USER_UNKNOWN = "Пользователь";
 
     /**

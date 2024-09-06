@@ -8,7 +8,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.model.request.ItemRequest;
-import ru.practicum.shareit.validate.Validated;
+import ru.practicum.shareit.validation.ValidatedEntity;
 
 /**
  * Сущность 'вещь'
@@ -16,7 +16,7 @@ import ru.practicum.shareit.validate.Validated;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Item implements Validated {
+public class Item implements ValidatedEntity {
     @DecimalMin(value = "0", message = "ID не может быть отрицательным значением")
     final Long id;
 

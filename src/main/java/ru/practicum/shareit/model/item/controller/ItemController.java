@@ -36,13 +36,16 @@ public class ItemController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     static String OWNER_ID = "владелец с ID[{}]";
+    static final String HEADER_SHARER = "X-Sharer-User-Id";
+    static final String ITEM_ID = "item-id";
+    static final String SEARCH_STRING = "text";
     String thisService = this.getClass().getSimpleName();
     ItemService items;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ItemDto add(@RequestBody() ItemDto itemDto,
-                       @RequestHeader(value = "X-Sharer-User-Id", required = false) Long ownerId) {
+                       @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info("Запрос POST: создать предмет {} владелец ID[{}]", itemDto, ownerId);
         checkSharerHeader(ownerId);
         var response = items.add(itemDto, ownerId);
@@ -52,8 +55,8 @@ public class ItemController {
 
     @PatchMapping("/{item-id}")
     public ItemDto update(@RequestBody ItemDto itemDto,
-                          @PathVariable(value = "item-id") Long itemId,
-                          @RequestHeader(value = "X-Sharer-User-Id", required = false) Long ownerId
+                          @PathVariable(value = ITEM_ID) Long itemId,
+                          @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId
                           ) {
         log.info("Запрос PATCH: обновить предмет ID[{}] значениями {} владелец ID[{}]", itemId, itemDto, ownerId);
         checkSharerHeader(ownerId);
@@ -63,7 +66,7 @@ public class ItemController {
     }
 
     @GetMapping("/{item-id}")
-    public ItemDto get(@PathVariable(value = "item-id") Long itemId) {
+    public ItemDto get(@PathVariable(value = ITEM_ID) Long itemId) {
         log.info("Запрос GET: показать предмет с ID[{}] любому пользователю", itemId);
         var response = items.get(itemId);
         log.info(RESPONSE_OK, response);
@@ -71,7 +74,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> list(@RequestHeader(value = "X-Sharer-User-Id", required = false) Long ownerId) {
+    public Collection<ItemDto> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info("Запрос GET: показать владельцу с ID[{}] список его предметов ", ownerId);
         checkSharerHeader(ownerId);
         var response = items.getAllByOwner(ownerId);
@@ -80,7 +83,7 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public Collection<ItemDto> search(@RequestParam(value = "text") String searchString) {
+    public Collection<ItemDto> search(@RequestParam(value = SEARCH_STRING) String searchString) {
         log.info("Запрос GET: найти предмет с текстом '{}' в названии или описании", searchString);
         var response = items.search(searchString);
         log.info(RESPONSE_OK, response);
@@ -91,7 +94,7 @@ public class ItemController {
         Optional.ofNullable(ownerId).orElseThrow(
                 () -> new EntityValidateException(
                         thisService, EMPTY_STRING, EMPTY_STRING,
-                        Map.of("Отсутствует заголовок 'X-Sharer-User-Id'",
+                        Map.of("Отсутствует заголовок '".concat(HEADER_SHARER).concat("'"),
                                 "Не указан владелец вещи"
                         )
                 )

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.validate;
+package ru.practicum.shareit.validation;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -13,12 +13,12 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Компонент, реализующий интерфейс {@link EntityValidate}. Выполняет валидацию сущностей в приложении при помощи
+ * Компонент, реализующий интерфейс {@link CustomEntityValidator}. Выполняет валидацию сущностей в приложении при помощи
  * API Jakarta Bean Validation {@linkplain jakarta.validation}.
  */
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class EntityValidator implements EntityValidate {
+public class EntityValidator implements CustomEntityValidator {
     static Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
     static String VALIDATION_ERROR = "Ошибка валидации";
     static String SERVICE_FAILURE = "Сервис не смог проверить запрос ";
@@ -27,11 +27,11 @@ public class EntityValidator implements EntityValidate {
     /**
      * Метод проверяет поля принимаемого объекта, помеченные аннотациями валидации.
      *
-     * @param data сущность, объявленная с использованием интерфейса {@link Validated}
+     * @param data сущность, объявленная с использованием интерфейса {@link ValidatedEntity}
      * @return этот же объект, если валидация успешно выполнена
      */
     @Override
-    public Validated validate(Validated data) {
+    public ValidatedEntity validate(ValidatedEntity data) {
         Set<ConstraintViolation<Object>> violations;
         Map<String, String> errors = new LinkedHashMap<>();
         try {

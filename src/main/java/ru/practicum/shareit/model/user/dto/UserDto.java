@@ -5,7 +5,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.validate.Validated;
+import ru.practicum.shareit.validation.ValidatedEntity;
 
 /**
  * DTO 'пользователь'
@@ -13,7 +13,7 @@ import ru.practicum.shareit.validate.Validated;
 @Data
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class UserDto implements Validated {
+public class UserDto implements ValidatedEntity {
         Long id;
         String name;
 

@@ -28,10 +28,11 @@ import ru.practicum.shareit.model.user.service.UserService;
 public class UserController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
+    static final String USER_ID = "user-id";
     UserService users;
 
     @GetMapping("/{user-id}")
-    public UserDto get(@PathVariable(name = "user-id") Long userId) {
+    public UserDto get(@PathVariable(name = USER_ID) Long userId) {
         log.info("Запрос GET: получить пользователя ID[{}]", userId);
         var response = users.get(userId);
         log.info(RESPONSE_OK, response);
@@ -49,7 +50,7 @@ public class UserController {
 
     @PatchMapping("/{user-id}")
     public UserDto update(@RequestBody UserDto userDto,
-                          @PathVariable(name = "user-id") Long userId) {
+                          @PathVariable(name = USER_ID) Long userId) {
         log.info("Запрос PATCH: обновить поля {} у пользователя ID[{}]", userId, userDto);
         var response = users.update(userDto, userId);
         log.info(RESPONSE_OK, response);
@@ -57,7 +58,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{user-id}")
-    public void delete(@PathVariable(name = "user-id") Long userId) {
+    public void delete(@PathVariable(name = USER_ID) Long userId) {
         log.info("Запрос DELETE удалить пользователя ID[{}]", userId);
         users.delete(userId);
         log.info(RESPONSE_OK);
