@@ -1,22 +1,22 @@
-package ru.practicum.shareit.model.user.dto;
+package ru.practicum.shareit.model.user;
 
 import jakarta.validation.constraints.Email;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.validation.ValidatedEntity;
 
 /**
  * DTO 'пользователь'
  */
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserDto implements ValidatedEntity {
-        Long id;
-        String name;
-
-        @Email(message = "Неверный формат для email")
-        String email;
+    Long id;
+    String name;
+    @Email(message = "Неверный формат для email") String email;
 }

@@ -1,4 +1,4 @@
-package ru.practicum.shareit.model.item.controller;
+package ru.practicum.shareit.model.item;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.exception.EntityValidateException;
-import ru.practicum.shareit.model.item.dto.ItemDto;
-import ru.practicum.shareit.model.item.service.ItemService;
 
 import java.util.Collection;
 import java.util.Map;

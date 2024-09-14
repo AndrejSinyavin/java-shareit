@@ -1,4 +1,4 @@
-package ru.practicum.shareit.model.user.controller;
+package ru.practicum.shareit.model.user;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.model.user.dto.UserDto;
-import ru.practicum.shareit.model.user.service.UserService;
 
 /**
  * Контроллер обработки REST-запросов для работы с 'пользователями'
@@ -28,6 +26,7 @@ import ru.practicum.shareit.model.user.service.UserService;
 public class UserController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
+    static String RESPONSE_NO_CONTENT = "Ответ: '204 No Content'";
     static final String USER_ID = "user-id";
     UserService users;
 
@@ -57,11 +56,12 @@ public class UserController {
         return response;
     }
 
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{user-id}")
     public void delete(@PathVariable(name = USER_ID) Long userId) {
         log.info("Запрос DELETE удалить пользователя ID[{}]", userId);
         users.delete(userId);
-        log.info(RESPONSE_OK);
+        log.info(RESPONSE_NO_CONTENT);
     }
 
 }

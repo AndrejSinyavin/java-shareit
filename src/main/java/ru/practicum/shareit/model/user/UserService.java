@@ -1,6 +1,4 @@
-package ru.practicum.shareit.model.user.service;
-
-import ru.practicum.shareit.model.user.dto.UserDto;
+package ru.practicum.shareit.model.user;
 
 /**
  * Интерфейс сервисов для работы с пользователем

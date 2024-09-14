@@ -1,7 +1,7 @@
 package ru.practicum.shareit.model.request;
 
 import lombok.Data;
-import ru.practicum.shareit.model.user.entity.User;
+import ru.practicum.shareit.model.user.User;
 
 import java.time.ZonedDateTime;
 

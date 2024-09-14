@@ -1,14 +1,15 @@
-package ru.practicum.shareit.model.user.service;
+package ru.practicum.shareit.model.user;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.model.user.dto.UserDto;
-import ru.practicum.shareit.model.user.entity.User;
-import ru.practicum.shareit.model.user.mapper.UserMapperBase;
-import ru.practicum.shareit.model.user.repository.UserRepository;
+import ru.practicum.shareit.exception.EntityAlreadyExistsException;
+import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.validation.CustomEntityValidator;
+
+import java.util.Optional;
 
 /**
  * Реализация интерфейса {@link UserService} для работы с пользователями
@@ -16,11 +17,15 @@ import ru.practicum.shareit.validation.CustomEntityValidator;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class UserServiceImp implements UserService {
+public class UserServiceImpl implements UserService {
+    static String USER_NAME_UNKNOWN = "";
+    static String USER_ID = "ID ";
+    static Long USER_ID_EMPTY = 0L;
+    static String USER_NOT_FOUND = "'Пользователь' не найден в репозитории";
+    String thisService = this.getClass().getSimpleName();
     UserRepository users;
-    UserMapperBase mapper;
+    UserMapper mapper;
     CustomEntityValidator validator;
-    static final String USER_UNKNOWN = "Пользователь";
 
     /**
      * Получение 'пользователя' по его идентификатору
@@ -30,7 +35,9 @@ public class UserServiceImp implements UserService {
      */
     @Override
     public UserDto get(Long userId) {
-        var user = users.get(userId);
+        var user = users.findById(userId)
+                .orElseThrow(() ->
+                new EntityNotFoundException(thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString())));
         return mapper.toUserDto(user);
     }
 
@@ -42,12 +49,17 @@ public class UserServiceImp implements UserService {
      */
     @Override
     public UserDto add(UserDto userDto) {
+        userDto.setId(USER_ID_EMPTY);
         var data = (User) validator.validate(mapper.toUser(userDto));
         String name = data.getName();
         if (name == null || name.isBlank()) {
-            data.setName(USER_UNKNOWN);
+            data.setName(USER_NAME_UNKNOWN);
         }
-        return mapper.toUserDto(users.add(data));
+        try {
+            return mapper.toUserDto(users.save(data));
+        } catch (DataIntegrityViolationException e) {
+            throw new EntityAlreadyExistsException(thisService, "", e.getMostSpecificCause().getLocalizedMessage());
+        }
     }
 
     /**
@@ -59,8 +71,17 @@ public class UserServiceImp implements UserService {
      */
     @Override
     public UserDto update(UserDto userDto, Long userId) {
+        var user = users.findById(userId).orElseThrow(() ->
+                new EntityNotFoundException(thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString()))
+        );
         var data = mapper.toUser((UserDto) validator.validate(userDto));
-        return mapper.toUserDto(users.update(data, userId));
+        String name = data.getName();
+        if (name != null && name.isBlank()) {
+            data.setName(USER_NAME_UNKNOWN);
+        }
+        Optional.ofNullable(data.getName()).ifPresent(user::setName);
+        Optional.ofNullable(data.getEmail()).ifPresent(user::setEmail);
+        return mapper.toUserDto(users.save(user));
     }
 
     /**
@@ -70,7 +91,7 @@ public class UserServiceImp implements UserService {
      */
     @Override
     public void delete(Long userId) {
-        users.delete(userId);
+        users.deleteById(userId);
     }
 
 }

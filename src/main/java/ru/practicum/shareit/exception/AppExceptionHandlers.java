@@ -22,7 +22,7 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestControllerAdvice
 public class AppExceptionHandlers {
-    static String BLANK = ". ";
+    static String SEPARATOR = ". ";
     static String BAD_REQUEST = "'400 Bad Request' ";
     static String CONFLICT = "'409 Conflict' ";
     static String NOT_FOUND = "'404 Not Found' ";
@@ -65,7 +65,7 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictRequestResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FOUR, CONFLICT, e.getMessage(), e.getError(), e.getStackTrace());
-        return new ErrorResponse(CONFLICT, e.getMessage().concat(BLANK).concat(e.getError()));
+        return new ErrorResponse(CONFLICT, e.getMessage().concat(SEPARATOR).concat(e.getError()));
     }
 
     /**
@@ -78,7 +78,7 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleAccessDeniedResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FOUR, FORBIDDEN, e.getMessage(), e.getError(), e.getStackTrace());
-        return new ErrorResponse(FORBIDDEN, e.getMessage().concat(BLANK).concat(e.getError()));
+        return new ErrorResponse(FORBIDDEN, e.getMessage().concat(SEPARATOR).concat(e.getError()));
     }
 
     /**
@@ -105,7 +105,10 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundErrorResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FIVE, NOT_FOUND, ENTITY_NOT_FOUND, e.getError(), e.getMessage(), e.getStackTrace());
-        return new ErrorResponse(NOT_FOUND.concat(ENTITY_NOT_FOUND), e.getError().concat(BLANK).concat(e.getMessage()));
+        return new ErrorResponse(
+                NOT_FOUND.concat(ENTITY_NOT_FOUND),
+                e.getError().concat(SEPARATOR).concat(e.getMessage())
+        );
     }
 
     /**
@@ -119,7 +122,10 @@ public class AppExceptionHandlers {
     public ErrorResponse handleServerInternalErrorResponse(final AppException e) {
         log.error(LOG_RESPONSE_FIVE, INTERNAL_SERVER_ERROR.concat(SERVER_ERROR),
                 e.getSource(), e.getError(), e.getMessage(), e.getStackTrace());
-        return new ErrorResponse(INTERNAL_SERVER_ERROR, SERVER_ERROR.concat(BLANK).concat(e.getLocalizedMessage()));
+        return new ErrorResponse(
+                INTERNAL_SERVER_ERROR,
+                SERVER_ERROR.concat(SEPARATOR).concat(e.getLocalizedMessage())
+        );
     }
 
     /**

@@ -1,8 +1,6 @@
-package ru.practicum.shareit.model.item.mapper;
+package ru.practicum.shareit.model.item;
 
 import org.springframework.stereotype.Component;
-import ru.practicum.shareit.model.item.dto.ItemDto;
-import ru.practicum.shareit.model.item.entity.Item;
 
 @Component
 public class ItemMapper implements ItemMapperBase {

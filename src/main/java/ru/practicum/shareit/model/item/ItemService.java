@@ -1,6 +1,4 @@
-package ru.practicum.shareit.model.item.service;
-
-import ru.practicum.shareit.model.item.dto.ItemDto;
+package ru.practicum.shareit.model.item;
 
 import java.util.Collection;
 
