@@ -10,7 +10,7 @@ public interface ItemService {
 
     ItemDto get(Long itemId);
 
-    Collection<ItemDto> getAllByOwner(Long ownerId);
+    Collection<ItemDto> getItemsByOwner(Long ownerId);
 
     Collection<ItemDto> search(String searchString);
 

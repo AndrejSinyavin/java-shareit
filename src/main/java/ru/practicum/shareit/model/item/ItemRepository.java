@@ -1,9 +1,13 @@
 package ru.practicum.shareit.model.item;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import ru.practicum.shareit.model.user.User;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface ItemRepository extends JpaRepository<Item, Long> {
-    List<Item> findAllByNameOrDescriptionIsContainingIgnoreCaseOrderById(String searchString);
+    Collection<Item> findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(
+            String searchName, String searchDescription);
+
+    Collection<Item> getAllByOwnerOrderById(User owner);
 }

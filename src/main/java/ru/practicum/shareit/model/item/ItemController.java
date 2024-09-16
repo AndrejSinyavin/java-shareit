@@ -47,7 +47,7 @@ public class ItemController {
         log.info("Запрос POST: создать предмет {} владелец ID[{}]", itemDto, ownerId);
         checkSharerHeader(ownerId);
         var response = items.add(itemDto, ownerId);
-        log.info(RESPONSE_CREATED.concat(OWNER_ID), response, ownerId);
+        log.info(RESPONSE_CREATED.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
 
@@ -59,7 +59,7 @@ public class ItemController {
         log.info("Запрос PATCH: обновить предмет ID[{}] значениями {} владелец ID[{}]", itemId, itemDto, ownerId);
         checkSharerHeader(ownerId);
         var response = items.update(itemDto, itemId, ownerId);
-        log.info(RESPONSE_OK.concat(OWNER_ID), response, ownerId);
+        log.info(RESPONSE_OK.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
 
@@ -67,7 +67,7 @@ public class ItemController {
     public ItemDto get(@PathVariable(value = ITEM_ID) Long itemId) {
         log.info("Запрос GET: показать предмет с ID[{}] любому пользователю", itemId);
         var response = items.get(itemId);
-        log.info(RESPONSE_OK, response);
+        log.info(RESPONSE_OK, response.toString());
         return response;
     }
 
@@ -75,8 +75,8 @@ public class ItemController {
     public Collection<ItemDto> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info("Запрос GET: показать владельцу с ID[{}] список его предметов ", ownerId);
         checkSharerHeader(ownerId);
-        var response = items.getAllByOwner(ownerId);
-        log.info(RESPONSE_OK, response);
+        var response = items.getItemsByOwner(ownerId);
+        log.info(RESPONSE_OK, response.toString());
         return response;
     }
 
@@ -84,7 +84,7 @@ public class ItemController {
     public Collection<ItemDto> search(@RequestParam(value = SEARCH_STRING) String searchString) {
         log.info("Запрос GET: найти предмет с текстом '{}' в названии или описании", searchString);
         var response = items.search(searchString);
-        log.info(RESPONSE_OK, response);
+        log.info(RESPONSE_OK, response.toString());
         return response;
     }
 

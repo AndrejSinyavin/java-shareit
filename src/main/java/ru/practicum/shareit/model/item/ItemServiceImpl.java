@@ -9,10 +9,8 @@ import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityAlreadyExistsException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.model.user.UserRepository;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 
 /**
@@ -34,7 +32,6 @@ public class ItemServiceImpl implements ItemService {
     ItemRepository items;
     UserRepository users;
     ItemMapperBase mapper;
-    CustomEntityValidator validator;
 
     /**
      * Получение 'предмета' по его идентификатору
@@ -66,7 +63,6 @@ public class ItemServiceImpl implements ItemService {
         Item data = mapper.toItem(itemDto);
         data.setId(ITEM_ID_EMPTY);
         data.setOwner(owner);
-        data = (Item) validator.validate(data);
         try {
             return mapper.toItemDto(items.save(data));
         } catch (DataIntegrityViolationException e) {
@@ -88,24 +84,22 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public ItemDto update(ItemDto itemDto, Long itemId, Long ownerId) {
-        var owner = users.findById(ownerId)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()))
-                );
-        var item = items.findById(itemId)
-                .orElseThrow(() ->
-                        new EntityNotFoundException(thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString())));
+        if (!users.existsById(ownerId)) {
+            throw new EntityNotFoundException(thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()));
+        }
+        var item = items.findById(itemId).orElseThrow(() ->
+                new EntityNotFoundException(thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString())));
         if (!ownerId.equals(item.getOwner().getId())) {
             throw new EntityAccessDeniedException(
                     thisService, ENTITY_UPDATE_ERROR, ACCESS_DENIED.concat(itemId.toString())
             );
         }
-        var data = mapper.toItem((ItemDto) validator.validate(itemDto));
+        var data = mapper.toItem(itemDto);
         Optional.ofNullable(data.getName()).ifPresent(item::setName);
         Optional.ofNullable(data.getDescription()).ifPresent(item::setDescription);
         Optional.ofNullable(data.getAvailable()).ifPresent(item::setAvailable);
             try {
-                return mapper.toItemDto(items.save(data));
+                return mapper.toItemDto(items.save(item));
             } catch (DataIntegrityViolationException e) {
                 throw new EntityAlreadyExistsException(
                         thisService,
@@ -122,14 +116,13 @@ public class ItemServiceImpl implements ItemService {
      * @return список {@link ItemDto}
      */
     @Override
-    public Collection<ItemDto> getAllByOwner(Long ownerId) {
-        if (!users.existsById(ownerId)) {
-            throw new EntityNotFoundException(thisService, OWNER_NOT_FOUND, OWNER_ID);
-        }
-        return items.findAllById(Collections.singleton(ownerId))
-                .stream()
-                .map(mapper::toItemDto)
-                .toList();
+    public Collection<ItemDto> getItemsByOwner(Long ownerId) {
+        var owner = users.findById(ownerId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException(
+                                thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()))
+                );
+        return items.getAllByOwnerOrderById(owner).stream().map(mapper::toItemDto).toList();
     }
 
     /**
@@ -141,10 +134,8 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public Collection<ItemDto> search(String searchString) {
-        return items.findAllByNameOrDescriptionIsContainingIgnoreCaseOrderById(searchString)
-                .stream()
-                .map(mapper::toItemDto)
-                .toList();
+        return items.findByNameContainingIgnoreCaseAndDescriptionContainingIgnoreCase(searchString, searchString)
+                .stream().map(mapper::toItemDto).toList();
     }
 
 }

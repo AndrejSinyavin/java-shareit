@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.shareit.model.user.dto.UserDto;
+import ru.practicum.shareit.model.user.dto.UserMapper;
 
 /**
  * Контроллер обработки REST-запросов для работы с 'пользователями'
@@ -28,32 +30,33 @@ public class UserController {
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     static String RESPONSE_NO_CONTENT = "Ответ: '204 No Content'";
     static final String USER_ID = "user-id";
+    UserMapper mapper;
     UserService users;
 
     @GetMapping("/{user-id}")
     public UserDto get(@PathVariable(name = USER_ID) Long userId) {
         log.info("Запрос GET: получить пользователя ID[{}]", userId);
         var response = users.get(userId);
-        log.info(RESPONSE_OK, response);
-        return response;
+        log.info(RESPONSE_OK, response.toString());
+        return mapper.toUserDto(response);
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UserDto add(@RequestBody UserDto userDto) {
-        log.info("Запрос POST: создать пользователя {}", userDto);
-        var response = users.add(userDto);
-        log.info(RESPONSE_CREATED, response);
-        return response;
+        log.info("Запрос POST: создать пользователя {}", userDto.toString());
+        var response = users.add(mapper.toAddUser(userDto));
+        log.info(RESPONSE_CREATED, response.toString());
+        return mapper.toUserDto(response);
     }
 
     @PatchMapping("/{user-id}")
     public UserDto update(@RequestBody UserDto userDto,
                           @PathVariable(name = USER_ID) Long userId) {
-        log.info("Запрос PATCH: обновить поля {} у пользователя ID[{}]", userId, userDto);
-        var response = users.update(userDto, userId);
-        log.info(RESPONSE_OK, response);
-        return response;
+        log.info("Запрос PATCH: обновить поля {} у пользователя ID[{}]", userId, userDto.toString());
+        var response = users.update(mapper.toUpdateUser(userDto), userId);
+        log.info(RESPONSE_OK, response.toString());
+        return mapper.toUserDto(response);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)

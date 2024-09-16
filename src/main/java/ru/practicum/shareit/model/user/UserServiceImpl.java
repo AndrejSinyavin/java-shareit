@@ -7,7 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAlreadyExistsException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
-import ru.practicum.shareit.validation.CustomEntityValidator;
+import ru.practicum.shareit.model.user.dto.UserDto;
 
 import java.util.Optional;
 
@@ -18,70 +18,65 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
-    static String USER_NAME_UNKNOWN = "";
+    static String EMPTY_STRING = "";
     static String USER_ID = "ID ";
-    static Long USER_ID_EMPTY = 0L;
     static String USER_NOT_FOUND = "'Пользователь' не найден в репозитории";
     String thisService = this.getClass().getSimpleName();
     UserRepository users;
-    UserMapper mapper;
-    CustomEntityValidator validator;
 
     /**
      * Получение 'пользователя' по его идентификатору
      *
      * @param userId идентификатор пользователя
-     * @return {@link UserDto} со всеми полями
+     * @return {@link User} со всеми полями
      */
     @Override
-    public UserDto get(Long userId) {
-        var user = users.findById(userId)
-                .orElseThrow(() ->
-                new EntityNotFoundException(thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString())));
-        return mapper.toUserDto(user);
+    public User get(Long userId) {
+        return users.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString())));
     }
 
     /**
      * Добавление 'пользователя'
      *
-     * @param userDto {@link UserDto} с необходимыми установленными полями
-     * @return {@link UserDto} со всеми полями и установленным ID
+     * @param user {@link User} с необходимыми установленными полями
+     * @return {@link User} со всеми полями и установленным ID
      */
     @Override
-    public UserDto add(UserDto userDto) {
-        userDto.setId(USER_ID_EMPTY);
-        var data = (User) validator.validate(mapper.toUser(userDto));
-        String name = data.getName();
-        if (name == null || name.isBlank()) {
-            data.setName(USER_NAME_UNKNOWN);
-        }
+    public User add(User user) {
         try {
-            return mapper.toUserDto(users.save(data));
+            return users.save(user);
         } catch (DataIntegrityViolationException e) {
-            throw new EntityAlreadyExistsException(thisService, "", e.getMostSpecificCause().getLocalizedMessage());
+            throw new EntityAlreadyExistsException(
+                    thisService,
+                    EMPTY_STRING,
+                    e.getMostSpecificCause().getLocalizedMessage());
         }
     }
 
     /**
      * Обновление существующего 'пользователя'
      *
-     * @param userDto {@link UserDto} с необходимыми установленными полями
-     * @param userId идентификатор 'пользователя'
-     * @return {@link UserDto} со всеми полями
+     * @param user шаблон {@link UserDto} с необходимыми установленными полями
+     * @param userId идентификатор целевого 'пользователя'
+     * @return обновленный {@link User}
      */
     @Override
-    public UserDto update(UserDto userDto, Long userId) {
-        var user = users.findById(userId).orElseThrow(() ->
+    public User update(User user, Long userId) {
+        var targetUser = users.findById(userId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString()))
         );
-        var data = mapper.toUser((UserDto) validator.validate(userDto));
-        String name = data.getName();
-        if (name != null && name.isBlank()) {
-            data.setName(USER_NAME_UNKNOWN);
+        Optional.ofNullable(user.getName()).ifPresent(targetUser::setName);
+        Optional.ofNullable(user.getEmail()).ifPresent(targetUser::setEmail);
+        try {
+            return users.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new EntityAlreadyExistsException(
+                    thisService,
+                    EMPTY_STRING,
+                    e.getMostSpecificCause().getLocalizedMessage());
         }
-        Optional.ofNullable(data.getName()).ifPresent(user::setName);
-        Optional.ofNullable(data.getEmail()).ifPresent(user::setEmail);
-        return mapper.toUserDto(users.save(user));
     }
 
     /**

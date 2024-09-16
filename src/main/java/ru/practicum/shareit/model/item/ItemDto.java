@@ -1,20 +1,14 @@
 package ru.practicum.shareit.model.item;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.validation.ValidatedEntity;
+import lombok.Value;
 
 /**
  * DTO 'вещь'
  */
-@Getter
-@Setter
+@Value
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class ItemDto implements ValidatedEntity {
+public class ItemDto {
         Long id;
         String name;
         String description;

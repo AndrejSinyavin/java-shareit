@@ -5,7 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.model.user.User;
-import ru.practicum.shareit.validation.ValidatedEntity;
+
 
 /**
  * Сущность 'вещь'
@@ -31,7 +30,7 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Item implements ValidatedEntity {
+public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -58,4 +57,5 @@ public class Item implements ValidatedEntity {
 
     @Column(name = "request", nullable = false)
     Long request;
+
 }
