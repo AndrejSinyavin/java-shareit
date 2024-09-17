@@ -1,7 +1,7 @@
 package ru.practicum.shareit.model.user;
 
 /**
- * Интерфейс сервисов для работы с пользователем
+ * Интерфейс сервисов для работы с 'пользователями'
  */
 public interface UserService {
 

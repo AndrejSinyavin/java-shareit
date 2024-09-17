@@ -16,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.exception.EntityValidateException;
+import ru.practicum.shareit.model.item.dto.ItemDto;
+import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
+import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
+import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -30,71 +33,83 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/items")
 public class ItemController {
-    static String EMPTY_STRING = "";
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     static String OWNER_ID = "владелец с ID[{}]";
+    static String OWNER_UNDEFINED = "Не указан владелец вещи";
+    static String ABSENT_HEADER = "Отсутствует заголовок ";
+    static String UPDATE_REQUEST = "Запрос PATCH: обновить предмет ID[{}] значениями {} владелец ID[{}]";
+    static String POST_REQUEST = "Запрос POST: создать предмет {} владелец ID[{}]";
+    static String GET_ITEM_REQUEST = "Запрос GET: показать предмет с ID[{}] любому пользователю";
+    static String GET_OWNER_LIST_REQUEST = "Запрос GET: показать владельцу с ID[{}] список его предметов";
+    static String FIND_ITEM_REQUEST = "Запрос GET: найти предмет с текстом '{}' в названии или описании";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String ITEM_ID = "item-id";
     static final String SEARCH_STRING = "text";
     String thisService = this.getClass().getSimpleName();
+    ItemMapperImpl mapper;
+    CustomEntityValidator validator;
     ItemService items;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ItemDto add(@RequestBody() ItemDto itemDto,
+    public ItemDto add(@RequestBody() ItemDtoCreate itemDtoCreate,
                        @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
-        log.info("Запрос POST: создать предмет {} владелец ID[{}]", itemDto, ownerId);
+        log.info(POST_REQUEST, itemDtoCreate, ownerId);
         checkSharerHeader(ownerId);
-        var response = items.add(itemDto, ownerId);
+        validator.validate(itemDtoCreate);
+        var response = mapper.toItemDto((items.add(mapper.toItem(itemDtoCreate), ownerId)));
         log.info(RESPONSE_CREATED.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
 
     @PatchMapping("/{item-id}")
-    public ItemDto update(@RequestBody ItemDto itemDto,
+    public ItemDto update(@RequestBody ItemDtoUpdate itemDtoUpdate,
                           @PathVariable(value = ITEM_ID) Long itemId,
                           @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId
                           ) {
-        log.info("Запрос PATCH: обновить предмет ID[{}] значениями {} владелец ID[{}]", itemId, itemDto, ownerId);
+        log.info(UPDATE_REQUEST, itemId, itemDtoUpdate, ownerId);
         checkSharerHeader(ownerId);
-        var response = items.update(itemDto, itemId, ownerId);
+        validator.validate(itemDtoUpdate);
+        var response = mapper.toItemDto(items.update(mapper.toItem(itemDtoUpdate), itemId, ownerId));
         log.info(RESPONSE_OK.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
 
     @GetMapping("/{item-id}")
     public ItemDto get(@PathVariable(value = ITEM_ID) Long itemId) {
-        log.info("Запрос GET: показать предмет с ID[{}] любому пользователю", itemId);
-        var response = items.get(itemId);
+        log.info(GET_ITEM_REQUEST, itemId);
+        var response = mapper.toItemDto(items.get(itemId));
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
 
     @GetMapping
     public Collection<ItemDto> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
-        log.info("Запрос GET: показать владельцу с ID[{}] список его предметов ", ownerId);
+        log.info(GET_OWNER_LIST_REQUEST, ownerId);
         checkSharerHeader(ownerId);
-        var response = items.getItemsByOwner(ownerId);
-        log.info(RESPONSE_OK, response.toString());
+        var response = items.getItemsByOwner(ownerId)
+                .stream()
+                .map(mapper::toItemDto)
+                .toList();
+        log.info(RESPONSE_OK, response);
         return response;
     }
 
     @GetMapping("/search")
     public Collection<ItemDto> search(@RequestParam(value = SEARCH_STRING) String searchString) {
-        log.info("Запрос GET: найти предмет с текстом '{}' в названии или описании", searchString);
-        var response = items.search(searchString);
-        log.info(RESPONSE_OK, response.toString());
+        log.info(FIND_ITEM_REQUEST, searchString);
+        var response = items.search(searchString).stream()
+                .map(mapper::toItemDto)
+                .toList();
+        log.info(RESPONSE_OK, response);
         return response;
     }
 
     private void checkSharerHeader(Long ownerId) {
         Optional.ofNullable(ownerId).orElseThrow(
                 () -> new EntityValidateException(
-                        thisService, EMPTY_STRING, EMPTY_STRING,
-                        Map.of("Отсутствует заголовок '".concat(HEADER_SHARER).concat("'"),
-                                "Не указан владелец вещи"
-                        )
+                        thisService, OWNER_UNDEFINED, ABSENT_HEADER.concat(HEADER_SHARER)
                 )
         );
     }

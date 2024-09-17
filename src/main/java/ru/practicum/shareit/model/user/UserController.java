@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.model.user.dto.UserDto;
-import ru.practicum.shareit.model.user.dto.UserMapper;
+import ru.practicum.shareit.validation.CustomEntityValidator;
 
 /**
  * Контроллер обработки REST-запросов для работы с 'пользователями'
@@ -29,40 +28,47 @@ public class UserController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     static String RESPONSE_NO_CONTENT = "Ответ: '204 No Content'";
+    static String POST_REQUEST = "Запрос POST: создать пользователя {}";
+    static String GET_REQUEST = "Запрос GET: получить пользователя ID[{}]";
+    static String PATCH_REQUEST = "Запрос PATCH: обновить поля {} у пользователя ID[{}]";
+    static String DELETE_REQUEST = "Запрос DELETE удалить пользователя ID[{}]";
     static final String USER_ID = "user-id";
     UserMapper mapper;
+    CustomEntityValidator validator;
     UserService users;
 
     @GetMapping("/{user-id}")
     public UserDto get(@PathVariable(name = USER_ID) Long userId) {
-        log.info("Запрос GET: получить пользователя ID[{}]", userId);
-        var response = users.get(userId);
+        log.info(GET_REQUEST, userId);
+        var response = mapper.toUserDto(users.get(userId));
         log.info(RESPONSE_OK, response.toString());
-        return mapper.toUserDto(response);
+        return response;
     }
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public UserDto add(@RequestBody UserDto userDto) {
-        log.info("Запрос POST: создать пользователя {}", userDto.toString());
-        var response = users.add(mapper.toAddUser(userDto));
+        log.info(POST_REQUEST, userDto.toString());
+        validator.validate(userDto);
+        var response = mapper.toUserDto(users.add(mapper.toAddUser(userDto)));
         log.info(RESPONSE_CREATED, response.toString());
-        return mapper.toUserDto(response);
+        return response;
     }
 
     @PatchMapping("/{user-id}")
     public UserDto update(@RequestBody UserDto userDto,
                           @PathVariable(name = USER_ID) Long userId) {
-        log.info("Запрос PATCH: обновить поля {} у пользователя ID[{}]", userId, userDto.toString());
-        var response = users.update(mapper.toUpdateUser(userDto), userId);
+        log.info(PATCH_REQUEST, userId, userDto.toString());
+        validator.validate(userDto);
+        var response = mapper.toUserDto(users.update(mapper.toUpdateUser(userDto), userId));
         log.info(RESPONSE_OK, response.toString());
-        return mapper.toUserDto(response);
+        return (response);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{user-id}")
     public void delete(@PathVariable(name = USER_ID) Long userId) {
-        log.info("Запрос DELETE удалить пользователя ID[{}]", userId);
+        log.info(DELETE_REQUEST, userId);
         users.delete(userId);
         log.info(RESPONSE_NO_CONTENT);
     }

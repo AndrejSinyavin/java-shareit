@@ -1,11 +1,10 @@
-package ru.practicum.shareit.model.user.dto;
-
-import ru.practicum.shareit.model.user.User;
+package ru.practicum.shareit.model.user;
 
 /**
- * Интерфейс маппера User <-> DTO User
+ * Интерфейс маппинг 'User <-> DTO'
  */
 public interface UserMapper {
+
     User toAddUser(UserDto userDto);
 
     User toUpdateUser(UserDto userDto);

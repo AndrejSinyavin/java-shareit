@@ -3,11 +3,9 @@ package ru.practicum.shareit.model.user;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAlreadyExistsException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
-import ru.practicum.shareit.model.user.dto.UserDto;
 
 import java.util.Optional;
 
@@ -18,9 +16,9 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserServiceImpl implements UserService {
-    static String EMPTY_STRING = "";
     static String USER_ID = "ID ";
     static String USER_NOT_FOUND = "'Пользователь' не найден в репозитории";
+    static String EMAIL_ALREADY_EXISTS = "Такой email уже существует ";
     String thisService = this.getClass().getSimpleName();
     UserRepository users;
 
@@ -28,7 +26,7 @@ public class UserServiceImpl implements UserService {
      * Получение 'пользователя' по его идентификатору
      *
      * @param userId идентификатор пользователя
-     * @return {@link User} со всеми полями
+     * @return {@link User}
      */
     @Override
     public User get(Long userId) {
@@ -41,24 +39,21 @@ public class UserServiceImpl implements UserService {
      * Добавление 'пользователя'
      *
      * @param user {@link User} с необходимыми установленными полями
-     * @return {@link User} со всеми полями и установленным ID
+     * @return {@link User} с установленным ID
      */
     @Override
     public User add(User user) {
-        try {
-            return users.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new EntityAlreadyExistsException(
-                    thisService,
-                    EMPTY_STRING,
-                    e.getMostSpecificCause().getLocalizedMessage());
-        }
+        String email = user.getEmail();
+        users.findByEmailContainingIgnoreCase(email).ifPresent(e -> {
+            throw new EntityAlreadyExistsException(thisService, EMAIL_ALREADY_EXISTS, email);
+        });
+        return users.save(user);
     }
 
     /**
      * Обновление существующего 'пользователя'
      *
-     * @param user шаблон {@link UserDto} с необходимыми установленными полями
+     * @param user шаблон {@link User} с необходимыми установленными полями
      * @param userId идентификатор целевого 'пользователя'
      * @return обновленный {@link User}
      */
@@ -67,16 +62,15 @@ public class UserServiceImpl implements UserService {
         var targetUser = users.findById(userId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString()))
         );
-        Optional.ofNullable(user.getName()).ifPresent(targetUser::setName);
-        Optional.ofNullable(user.getEmail()).ifPresent(targetUser::setEmail);
-        try {
-            return users.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new EntityAlreadyExistsException(
-                    thisService,
-                    EMPTY_STRING,
-                    e.getMostSpecificCause().getLocalizedMessage());
+        String email = user.getEmail();
+        if (email != null && email.compareToIgnoreCase(targetUser.getEmail()) != 0) {
+            users.findByEmailContainingIgnoreCase(email).ifPresent(e -> {
+                throw new EntityAlreadyExistsException(thisService, EMAIL_ALREADY_EXISTS, email);
+            });
+            targetUser.setEmail(email);
         }
+        Optional.ofNullable(user.getName()).ifPresent(name -> targetUser.setName(name.trim()));
+        return users.save(targetUser);
     }
 
     /**
