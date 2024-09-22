@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Компонент, реализующий интерфейс {@link CustomEntityValidator}. Выполняет валидацию сущностей в приложении при помощи
- * API Jakarta Bean Validation {@linkplain jakarta.validation}.
+ * Компонент, реализующий интерфейс {@link CustomEntityValidator}.
+ * Выполняет валидацию сущностей в приложении при помощи API Jakarta Bean Validation {@linkplain jakarta.validation}.
  */
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

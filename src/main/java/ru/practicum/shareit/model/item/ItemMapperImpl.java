@@ -7,29 +7,32 @@ import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
 
+/**
+ * Реализация интерфейса {@link ItemMapper}
+ */
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ItemMapperImpl implements ItemMapper {
     static Long ITEM_ID_EMPTY = 0L;
 
     @Override
-    public Item toItem(ItemDtoCreate itemDto) {
+    public Item toItem(ItemDtoCreate item) {
         return new Item(
                 ITEM_ID_EMPTY,
-                itemDto.name(),
-                itemDto.description(),
-                itemDto.available(),
+                item.name(),
+                item.description(),
+                item.available(),
                 null,
                 null);
     }
 
     @Override
-    public Item toItem(ItemDtoUpdate itemDto) {
+    public Item toItem(ItemDtoUpdate item) {
         return new Item(
                 ITEM_ID_EMPTY,
-                itemDto.name(),
-                itemDto.description(),
-                itemDto.available(),
+                item.name(),
+                item.description(),
+                item.available(),
                 null,
                 null);
     }

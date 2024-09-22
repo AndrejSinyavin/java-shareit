@@ -1,5 +1,6 @@
 package ru.practicum.shareit.model.item;
 
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -47,37 +48,40 @@ public class ItemController {
     static final String ITEM_ID = "item-id";
     static final String SEARCH_STRING = "text";
     String thisService = this.getClass().getSimpleName();
-    ItemMapperImpl mapper;
+    ItemMapper mapper;
     CustomEntityValidator validator;
     ItemService items;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ItemDto add(@RequestBody() ItemDtoCreate itemDtoCreate,
+    public ItemDto add(@RequestBody() ItemDtoCreate item,
                        @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
-        log.info(POST_REQUEST, itemDtoCreate, ownerId);
+        log.info(POST_REQUEST, item, ownerId);
         checkSharerHeader(ownerId);
-        validator.validate(itemDtoCreate);
-        var response = mapper.toItemDto((items.add(mapper.toItem(itemDtoCreate), ownerId)));
+        validator.validate(item);
+        var response = mapper.toItemDto((items.add(mapper.toItem(item), ownerId)));
         log.info(RESPONSE_CREATED.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
 
     @PatchMapping("/{item-id}")
-    public ItemDto update(@RequestBody ItemDtoUpdate itemDtoUpdate,
+    public ItemDto update(@RequestBody ItemDtoUpdate item,
+                          @Positive(message = "ID не может быть отрицательным значением")
                           @PathVariable(value = ITEM_ID) Long itemId,
                           @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId
                           ) {
-        log.info(UPDATE_REQUEST, itemId, itemDtoUpdate, ownerId);
+        log.info(UPDATE_REQUEST, itemId, item, ownerId);
         checkSharerHeader(ownerId);
-        validator.validate(itemDtoUpdate);
-        var response = mapper.toItemDto(items.update(mapper.toItem(itemDtoUpdate), itemId, ownerId));
+        validator.validate(item);
+        var response = mapper.toItemDto(items.update(mapper.toItem(item), itemId, ownerId));
         log.info(RESPONSE_OK.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
 
     @GetMapping("/{item-id}")
-    public ItemDto get(@PathVariable(value = ITEM_ID) Long itemId) {
+    public ItemDto get(@PathVariable(value = ITEM_ID)
+                           @Positive(message = "ID не может быть отрицательным значением")
+                           Long itemId) {
         log.info(GET_ITEM_REQUEST, itemId);
         var response = mapper.toItemDto(items.get(itemId));
         log.info(RESPONSE_OK, response.toString());
@@ -88,10 +92,7 @@ public class ItemController {
     public Collection<ItemDto> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(GET_OWNER_LIST_REQUEST, ownerId);
         checkSharerHeader(ownerId);
-        var response = items.getItemsByOwner(ownerId)
-                .stream()
-                .map(mapper::toItemDto)
-                .toList();
+        var response = items.getItemsByOwner(ownerId);
         log.info(RESPONSE_OK, response);
         return response;
     }
@@ -99,7 +100,8 @@ public class ItemController {
     @GetMapping("/search")
     public Collection<ItemDto> search(@RequestParam(value = SEARCH_STRING) String searchString) {
         log.info(FIND_ITEM_REQUEST, searchString);
-        var response = items.search(searchString).stream()
+        var response = items.search(searchString)
+                .stream()
                 .map(mapper::toItemDto)
                 .toList();
         log.info(RESPONSE_OK, response);

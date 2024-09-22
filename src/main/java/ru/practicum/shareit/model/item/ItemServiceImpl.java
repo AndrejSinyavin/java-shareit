@@ -6,6 +6,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.user.UserRepository;
 
 import java.util.Collection;
@@ -62,13 +63,13 @@ public class ItemServiceImpl implements ItemService {
     /**
      * Обновление существующего 'предмета'
      *
-     * @param item {@link Item} с необходимыми установленными полями
+     * @param data {@link Item} с необходимыми установленными полями
      * @param itemId идентификатор 'предмета'
      * @param ownerId идентификатор 'владельца'
      * @return {@link Item} с обновленными полями
      */
     @Override
-    public Item update(Item item, Long itemId, Long ownerId) {
+    public Item update(Item data, Long itemId, Long ownerId) {
         if (!users.existsById(ownerId)) {
             throw new EntityNotFoundException(thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()));
         }
@@ -79,9 +80,9 @@ public class ItemServiceImpl implements ItemService {
                     thisService, ENTITY_UPDATE_ERROR, ACCESS_DENIED.concat(itemId.toString())
             );
         }
-        Optional.ofNullable(item.getName()).ifPresent(targetItem::setName);
-        Optional.ofNullable(item.getDescription()).ifPresent(targetItem::setDescription);
-        Optional.ofNullable(item.getAvailable()).ifPresent(targetItem::setAvailable);
+        Optional.ofNullable(data.getName()).ifPresent(targetItem::setName);
+        Optional.ofNullable(data.getDescription()).ifPresent(targetItem::setDescription);
+        Optional.ofNullable(data.getAvailable()).ifPresent(targetItem::setAvailable);
             return items.save(targetItem);
         }
 
@@ -92,7 +93,7 @@ public class ItemServiceImpl implements ItemService {
      * @return список {@link Item}
      */
     @Override
-    public Collection<Item> getItemsByOwner(Long ownerId) {
+    public Collection<ItemDto> getItemsByOwner(Long ownerId) {
         var owner = users.findById(ownerId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(

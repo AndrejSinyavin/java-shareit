@@ -43,7 +43,7 @@ public class Item implements ValidatedEntity {
     Boolean available;
 
     @ManyToOne()
-    @JoinColumn(name = "owner")
+    @JoinColumn(name = "owner", nullable = false)
     User owner;
 
     @Column(name = "request", nullable = false)

@@ -2,12 +2,14 @@ package ru.practicum.shareit.model.item;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.user.User;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
- * JPA-репозиторий
+ * JPA-репозиторий для работы с 'вещами'
  */
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
@@ -17,5 +19,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
             or upper(i.description) like upper(concat('%', ?1, '%')))""")
     Collection<Item> searchSubstring(String subString);
 
-    Collection<Item> getAllByOwnerOrderById(User owner);
+    Collection<ItemDto> getAllByOwnerOrderById(User owner);
+
+    Set<Item> getItemsByOwnerId(Long ownerId);
 }

@@ -69,7 +69,7 @@ public class UserServiceImpl implements UserService {
             });
             targetUser.setEmail(email);
         }
-        Optional.ofNullable(user.getName()).ifPresent(name -> targetUser.setName(name.trim()));
+        Optional.ofNullable(user.getName()).ifPresent(targetUser::setName);
         return users.save(targetUser);
     }
 

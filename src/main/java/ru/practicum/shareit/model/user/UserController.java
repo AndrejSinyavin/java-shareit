@@ -1,5 +1,6 @@
 package ru.practicum.shareit.model.user;
 
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import ru.practicum.shareit.model.user.dto.UserDto;
+import ru.practicum.shareit.model.user.dto.UserDtoCreate;
+import ru.practicum.shareit.model.user.dto.UserDtoUpdate;
 import ru.practicum.shareit.validation.CustomEntityValidator;
 
 /**
@@ -38,7 +42,9 @@ public class UserController {
     UserService users;
 
     @GetMapping("/{user-id}")
-    public UserDto get(@PathVariable(name = USER_ID) Long userId) {
+    public UserDto get(@PathVariable(name = USER_ID)
+                           @Positive(message = "ID не может быть отрицательным значением")
+                           Long userId) {
         log.info(GET_REQUEST, userId);
         var response = mapper.toUserDto(users.get(userId));
         log.info(RESPONSE_OK, response.toString());
@@ -47,27 +53,31 @@ public class UserController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public UserDto add(@RequestBody UserDto userDto) {
-        log.info(POST_REQUEST, userDto.toString());
-        validator.validate(userDto);
-        var response = mapper.toUserDto(users.add(mapper.toAddUser(userDto)));
+    public UserDto add(@RequestBody UserDtoCreate user) {
+        log.info(POST_REQUEST, user.toString());
+        validator.validate(user);
+        var response = mapper.toUserDto(users.add(mapper.toAddUser(user)));
         log.info(RESPONSE_CREATED, response.toString());
         return response;
     }
 
     @PatchMapping("/{user-id}")
-    public UserDto update(@RequestBody UserDto userDto,
-                          @PathVariable(name = USER_ID) Long userId) {
-        log.info(PATCH_REQUEST, userId, userDto.toString());
-        validator.validate(userDto);
-        var response = mapper.toUserDto(users.update(mapper.toUpdateUser(userDto), userId));
+    public UserDto update(@RequestBody UserDtoUpdate user,
+                          @PathVariable(name = USER_ID)
+                          @Positive(message = "ID не может быть отрицательным значением")
+                          Long userId) {
+        log.info(PATCH_REQUEST, userId, user.toString());
+        validator.validate(user);
+        var response = mapper.toUserDto(users.update(mapper.toUpdateUser(user), userId));
         log.info(RESPONSE_OK, response.toString());
         return (response);
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{user-id}")
-    public void delete(@PathVariable(name = USER_ID) Long userId) {
+    public void delete(@PathVariable(name = USER_ID)
+                           @Positive(message = "ID не может быть отрицательным значением")
+                           Long userId) {
         log.info(DELETE_REQUEST, userId);
         users.delete(userId);
         log.info(RESPONSE_NO_CONTENT);

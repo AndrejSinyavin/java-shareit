@@ -32,6 +32,7 @@ public class AppExceptionHandlers {
     static String INCORRECT_REQUEST = "Неправильные или отсутствующие в запросе поля, заголовки, переменные пути.";
     static String INCORRECT_FIELDS = "Обнаружены некорректные параметры в запросе.";
     static String ENTITY_NOT_FOUND = "Не найден объект, необходимый для выполнения запроса.";
+    static String REQUEST_COULD_NOT_BE_PROCESSED = "Невозможно выполнить запрос.";
     static String SERVER_ERROR = "Сервер не смог обработать запрос.";
     static String SERVER_FAILURE = "Сбой в работе сервера.";
     static String VALIDATE_CONTROLLER = "Валидация запроса в контроллере.";
@@ -48,9 +49,25 @@ public class AppExceptionHandlers {
     @ExceptionHandler({EntityValidateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestResponse(final EntityValidateException e) {
-        log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().values(), e.getStackTrace());
+        log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().toString(), e.getStackTrace());
         Map<String, String> errors = new LinkedHashMap<>();
         errors.put(BAD_REQUEST, INCORRECT_REQUEST);
+        errors.putAll(e.getErrors());
+        return new ErrorResponse(errors);
+    }
+
+    /**
+     * Обработчик исключений для ответов BAD_REQUEST при невозможности обработки данных в сервисном слое
+     *
+     * @param e перехваченное исключение
+     * @return стандартный API-ответ об ошибке ErrorResponse с описанием ошибки и вероятных причинах
+     */
+    @ExceptionHandler({EntityProcessingOfDataErrorException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleErrorInProcessingOfDataResponse(final EntityProcessingOfDataErrorException e) {
+        log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().toString(), e.getStackTrace());
+        Map<String, String> errors = new LinkedHashMap<>();
+        errors.put(BAD_REQUEST, REQUEST_COULD_NOT_BE_PROCESSED);
         errors.putAll(e.getErrors());
         return new ErrorResponse(errors);
     }

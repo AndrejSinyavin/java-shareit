@@ -5,7 +5,7 @@ import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
 
 /**
- * Интерфейс маппинг 'Item <-> DTO'
+ * Маппинг 'Item <-> DTO'
  */
 public interface ItemMapper {
 
