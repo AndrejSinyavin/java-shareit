@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
@@ -27,4 +28,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     Collection<Booking> findAllByBookerIdIsAndItemIdInAndEndBeforeOrderByStartDesc(
             Long ownerId, Set<Long> itemIds, Instant now);
+
+    Collection<Booking> getAllByItemIdIn(List<Long> itemIds);
 }

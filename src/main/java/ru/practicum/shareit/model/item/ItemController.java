@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.model.item.dto.ItemDto;
+import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
 import ru.practicum.shareit.validation.CustomEntityValidator;
@@ -89,7 +90,7 @@ public class ItemController {
     }
 
     @GetMapping
-    public Collection<ItemDto> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
+    public Collection<ItemDtoBooking> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(GET_OWNER_LIST_REQUEST, ownerId);
         checkSharerHeader(ownerId);
         var response = items.getItemsByOwner(ownerId);

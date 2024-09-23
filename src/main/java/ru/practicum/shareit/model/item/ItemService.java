@@ -1,6 +1,6 @@
 package ru.practicum.shareit.model.item;
 
-import ru.practicum.shareit.model.item.dto.ItemDto;
+import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 
 import java.util.Collection;
 
@@ -15,7 +15,7 @@ public interface ItemService {
 
     Item get(Long itemId);
 
-    Collection<ItemDto> getItemsByOwner(Long ownerId);
+    Collection<ItemDtoBooking> getItemsByOwner(Long ownerId);
 
     Collection<Item> search(String search);
 

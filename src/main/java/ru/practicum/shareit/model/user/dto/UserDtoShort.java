@@ -11,7 +11,6 @@ import java.io.Serializable;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserDtoShort(
-
         Long id,
         String name
 ) implements Serializable, ValidatedEntity {

@@ -6,10 +6,15 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.model.booking.BookingRepository;
 import ru.practicum.shareit.model.item.dto.ItemDto;
+import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.model.user.UserRepository;
 
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +34,7 @@ public class ItemServiceImpl implements ItemService {
     String thisService = this.getClass().getSimpleName();
     ItemRepository items;
     UserRepository users;
+    BookingRepository bookings;
 
     /**
      * Получение 'предмета' по его идентификатору
@@ -93,13 +99,60 @@ public class ItemServiceImpl implements ItemService {
      * @return список {@link Item}
      */
     @Override
-    public Collection<ItemDto> getItemsByOwner(Long ownerId) {
+    public Collection<ItemDtoBooking> getItemsByOwner(Long ownerId) {
         var owner = users.findById(ownerId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()))
                 );
-        return items.getAllByOwnerOrderById(owner);
+        var allOwnersItems = items.getAllByOwnerOrderById(owner);
+        var allOwnersItemDtoBookings = new HashMap<Long, ItemDtoBooking>();
+        var itemIds = allOwnersItems
+                .stream()
+                .peek(itemDto -> allOwnersItemDtoBookings.put(
+                        itemDto.id(),
+                        new ItemDtoBooking(
+                                itemDto.id(),
+                                itemDto.name(),
+                                itemDto.description(),
+                                itemDto.available(),
+                                null,
+                                null
+                        )
+                ))
+                .map(ItemDto::id)
+                .toList();
+        var allBooking = bookings.getAllByItemIdIn(itemIds);
+        var now = LocalDate.now();
+        allBooking.forEach(
+                booking -> {
+                    var item = allOwnersItemDtoBookings.get(booking.getId());
+                    var bookingStart =  LocalDate.ofInstant(booking.getStart(), ZoneOffset.UTC);
+                    if (bookingStart.isBefore(now)) {
+                        var previous = item.getPreviousBooking();
+                        if (previous == null) {
+                            previous = bookingStart;
+                        } else {
+                            if (previous.isBefore(bookingStart)) {
+                                previous = bookingStart;
+                            }
+                        }
+                        item.setPreviousBooking(previous);
+                    } else {
+                        var next = item.getNextBooking();
+                        if (next == null) {
+                            next = bookingStart;
+                        } else {
+                            if (next.isAfter(bookingStart)) {
+                                next = bookingStart;
+                            }
+                        }
+                        item.setNextBooking(next);
+                    }
+                }
+
+        );
+        return allOwnersItemDtoBookings.values();
     }
 
     /**

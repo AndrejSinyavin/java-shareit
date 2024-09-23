@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * DTO для создания {@link Booking}
+ * DTO для {@link Booking}
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record BookingDtoCreate(
