@@ -59,15 +59,15 @@ public class BookingController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public BookingDto createBooking(@RequestBody BookingDtoCreate bookingRequest,
+    public BookingDto createBooking(@RequestBody BookingDtoCreate booking,
                                     @RequestHeader(value = HEADER_SHARER, required = false)
                                     @Positive(message = "ID 'пользователя' должен быть больше нуля")
                                     Long bookerId)  {
-        log.info(POST_REQUEST, bookerId, bookingRequest.itemId());
+        log.info(POST_REQUEST, bookerId, booking.itemId());
         checkSharerHeader(bookerId);
-        validator.validate(bookingRequest);
+        validator.validate(booking);
         var response = mapper.toBookingDto(
-                bookers.add(mapper.toBooking(bookingRequest), bookingRequest.itemId(), bookerId)
+                bookers.add(mapper.toBooking(booking), booking.itemId(), bookerId)
         );
         log.info(RESPONSE_CREATED.concat(BOOKER_ID), response.toString(), bookerId);
         return response;

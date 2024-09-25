@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.exception.EntityValidateException;
+import ru.practicum.shareit.model.item.dto.CommentDto;
+import ru.practicum.shareit.model.item.dto.CommentDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
@@ -45,6 +47,7 @@ public class ItemController {
     static String GET_ITEM_REQUEST = "Запрос GET: показать предмет с ID[{}] любому пользователю";
     static String GET_OWNER_LIST_REQUEST = "Запрос GET: показать владельцу с ID[{}] список его предметов";
     static String FIND_ITEM_REQUEST = "Запрос GET: найти предмет с текстом '{}' в названии или описании";
+    static String ADD_COMMENT_REQUEST = "Запрос POST: пользователь ID[{}] создает для предмета ID[{}] комментарий {}";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String ITEM_ID = "item-id";
     static final String SEARCH_STRING = "text";
@@ -80,11 +83,11 @@ public class ItemController {
     }
 
     @GetMapping("/{item-id}")
-    public ItemDto get(@PathVariable(value = ITEM_ID)
+    public ItemDtoBooking get(@PathVariable(value = ITEM_ID)
                            @Positive(message = "ID не может быть отрицательным значением")
                            Long itemId) {
         log.info(GET_ITEM_REQUEST, itemId);
-        var response = mapper.toItemDto(items.get(itemId));
+        var response = items.get(itemId);
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
@@ -106,6 +109,19 @@ public class ItemController {
                 .map(mapper::toItemDto)
                 .toList();
         log.info(RESPONSE_OK, response);
+        return response;
+    }
+
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/{item-id}/comment")
+    private CommentDto addComment(
+            @RequestBody CommentDtoCreate comment,
+            @PathVariable(value = ITEM_ID) Long itemId,
+            @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
+        log.info(ADD_COMMENT_REQUEST, ownerId, itemId, comment);
+        checkSharerHeader(ownerId);
+        var response = mapper.toCommentDto(items.addComment(ownerId, itemId, comment));
+        log.info(RESPONSE_CREATED, response);
         return response;
     }
 

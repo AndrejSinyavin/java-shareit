@@ -1,11 +1,7 @@
 package ru.practicum.shareit.model.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import ru.practicum.shareit.model.item.Item;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 import java.io.Serializable;
 
@@ -14,17 +10,9 @@ import java.io.Serializable;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ItemDto(
-        @NotNull(message = "Отсутствует ID")
-        @Positive(message = "ID должно быть положительным значением")
         Long id,
-
-        @NotBlank(message = "Не указано название вещи")
         String name,
-
-        @NotBlank(message = "Не указано описание вещи")
         String description,
-
-        @NotNull(message = "Не указана доступность вещи")
         Boolean available
-) implements Serializable, ValidatedEntity {
+) implements Serializable {
 }

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.model.item;
 
+import ru.practicum.shareit.model.item.dto.CommentDto;
 import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
@@ -14,4 +15,7 @@ public interface ItemMapper {
     Item toItem(ItemDtoUpdate itemDto);
 
     ItemDto toItemDto(Item item);
+
+    CommentDto toCommentDto(Comment comment);
+
 }

@@ -6,17 +6,23 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.exception.EntityRuntimeErrorException;
+import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.model.booking.BookingRepository;
+import ru.practicum.shareit.model.booking.BookingStatus;
+import ru.practicum.shareit.model.item.dto.CommentDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.model.user.UserRepository;
 
-import java.time.LocalDate;
-import java.time.ZoneOffset;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+
+import static java.time.ZoneOffset.UTC;
 
 /**
  * Реализация интерфейса {@link ItemService} для работы с 'вещами'
@@ -31,10 +37,17 @@ public class ItemServiceImpl implements ItemService {
     static String ITEM_NOT_FOUND = "'Предмет' не найден в репозитории: ";
     static String ENTITY_UPDATE_ERROR = "Ошибка при обновлении сущности ";
     static String ACCESS_DENIED = "Пользователь не является владельцем 'предмета' ID: ";
+    static String USER_NOT_CREATE_BOOKING = "Пользователь не делал запроса на аренду предмета ";
+    static String USER_NOT_USE_ITEM = "Пользователь еще не начал пользоваться предметом ";
+    static String USER_NOT_FINISHED_USE_ITEM = "Пользователь еще не закончил пользоваться предметом ";
+    static String OWNER_NOT_APPROVE_BOOKING = "Владелец не разрешал пользователю пользоваться предметом ";
+    static String EMPTY_COMMENT = "Комментарий пустой или не задан";
     String thisService = this.getClass().getSimpleName();
     ItemRepository items;
     UserRepository users;
     BookingRepository bookings;
+    CommentRepository comments;
+    ItemMapper mapper;
 
     /**
      * Получение 'предмета' по его идентификатору
@@ -43,16 +56,29 @@ public class ItemServiceImpl implements ItemService {
      * @return {@link Item} со всеми полями
      */
     @Override
-    public Item get(Long itemId) {
-        return items.findById(itemId)
+    public ItemDtoBooking get(Long itemId) {
+        var item = items.findById(itemId)
                 .orElseThrow(() ->
-                new EntityNotFoundException(thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString())));
+                        new EntityNotFoundException(thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString())));
+        var allComments = comments.findByItem_IdOrderByAuthor_IdAsc(itemId)
+                .stream()
+                .map(mapper::toCommentDto)
+                .toList();
+        return new ItemDtoBooking(
+                item.getId(),
+                item.getName(),
+                item.getDescription(),
+                item.getAvailable(),
+                null,
+                null,
+                allComments
+        );
     }
 
     /**
      * Добавление 'предмета'
      *
-     * @param item {@link Item} с необходимыми установленными полями
+     * @param item    {@link Item} с необходимыми установленными полями
      * @param ownerId идентификатор 'владельца'
      * @return {@link Item} с установленным ID
      */
@@ -117,19 +143,20 @@ public class ItemServiceImpl implements ItemService {
                                 itemDto.description(),
                                 itemDto.available(),
                                 null,
+                                null,
                                 null
                         )
                 ))
                 .map(ItemDto::id)
                 .toList();
         var allBooking = bookings.getAllByItemIdIn(itemIds);
-        var now = LocalDate.now();
+        var now = LocalDateTime.now();
         allBooking.forEach(
                 booking -> {
                     var item = allOwnersItemDtoBookings.get(booking.getId());
-                    var bookingStart =  LocalDate.ofInstant(booking.getStart(), ZoneOffset.UTC);
+                    var bookingStart =  LocalDateTime.ofInstant(booking.getStart(), UTC);
                     if (bookingStart.isBefore(now)) {
-                        var previous = item.getPreviousBooking();
+                        var previous = item.getLastBooking();
                         if (previous == null) {
                             previous = bookingStart;
                         } else {
@@ -137,7 +164,7 @@ public class ItemServiceImpl implements ItemService {
                                 previous = bookingStart;
                             }
                         }
-                        item.setPreviousBooking(previous);
+                        item.setLastBooking(previous);
                     } else {
                         var next = item.getNextBooking();
                         if (next == null) {
@@ -169,6 +196,54 @@ public class ItemServiceImpl implements ItemService {
         } else {
             return items.searchSubstring(search);
         }
+    }
+
+    /**
+     * Добавление комментария к предмету, который взят в аренду, или уже был в аренде
+     *
+     * @param userId идентификатор автора предполагаемого комментария
+     * @param itemId идентификатор предмета, которому написан комментарий
+     * @param comment текст комментария
+     * @return сформированный комментарий, записанный в базу
+     */
+    @Override
+    public Comment addComment(Long userId, Long itemId, CommentDtoCreate comment) {
+        if (comment == null || comment.text().isBlank()) {
+            throw new EntityValidateException(thisService, EMPTY_COMMENT);
+        }
+        var item = items.findById(itemId).orElseThrow(() ->
+                new EntityNotFoundException(
+                        thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString()))
+        );
+        var user = users.findById(userId).orElseThrow(() ->
+                new EntityNotFoundException(
+                        thisService, OWNER_NOT_FOUND, OWNER_ID.concat(userId.toString())
+                )
+        );
+        var now = LocalDateTime.now().toInstant(UTC);
+        var booking = bookings.findByItemIsAndBookerIs(item, user).orElseThrow(
+                        () -> new EntityNotFoundException(
+                                thisService,
+                                USER_NOT_CREATE_BOOKING,
+                                ITEM_ID.concat(itemId.toString()))
+        );
+        if (!booking.getStatus().equals(BookingStatus.APPROVED)) {
+            throw new EntityAccessDeniedException(
+                    thisService,
+                    OWNER_NOT_APPROVE_BOOKING,
+                    ITEM_ID.concat(itemId.toString())
+            );
+        } else if (booking.getStart().isAfter(now)) {
+                throw new EntityRuntimeErrorException(
+                        thisService,
+                        USER_NOT_USE_ITEM.concat(ITEM_ID.concat(itemId.toString()))
+                );
+        } else if (booking.getEnd().isAfter(now)) {
+            throw new EntityRuntimeErrorException(
+                    thisService, USER_NOT_FINISHED_USE_ITEM.concat(ITEM_ID).concat(itemId.toString())
+            );
+        }
+        return comments.save(new Comment(0L, item, user, comment.text(), Instant.now()));
     }
 
 }

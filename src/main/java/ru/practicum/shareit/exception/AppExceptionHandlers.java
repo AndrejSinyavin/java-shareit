@@ -49,9 +49,13 @@ public class AppExceptionHandlers {
     @ExceptionHandler({EntityValidateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestResponse(final EntityValidateException e) {
+        return warnBadRequest(e, INCORRECT_REQUEST);
+    }
+
+    private ErrorResponse warnBadRequest(EntityValidateException e, String incorrectRequest) {
         log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().toString(), e.getStackTrace());
         Map<String, String> errors = new LinkedHashMap<>();
-        errors.put(BAD_REQUEST, INCORRECT_REQUEST);
+        errors.put(BAD_REQUEST, incorrectRequest);
         errors.putAll(e.getErrors());
         return new ErrorResponse(errors);
     }
@@ -62,14 +66,10 @@ public class AppExceptionHandlers {
      * @param e перехваченное исключение
      * @return стандартный API-ответ об ошибке ErrorResponse с описанием ошибки и вероятных причинах
      */
-    @ExceptionHandler({EntityProcessingOfDataErrorException.class})
+    @ExceptionHandler({EntityRuntimeErrorException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleErrorInProcessingOfDataResponse(final EntityProcessingOfDataErrorException e) {
-        log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().toString(), e.getStackTrace());
-        Map<String, String> errors = new LinkedHashMap<>();
-        errors.put(BAD_REQUEST, REQUEST_COULD_NOT_BE_PROCESSED);
-        errors.putAll(e.getErrors());
-        return new ErrorResponse(errors);
+    public ErrorResponse handleErrorInProcessingOfDataResponse(final EntityRuntimeErrorException e) {
+        return warnBadRequest(e, REQUEST_COULD_NOT_BE_PROCESSED);
     }
 
     /**

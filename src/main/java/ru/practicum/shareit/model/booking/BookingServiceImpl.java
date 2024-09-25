@@ -6,14 +6,13 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
-import ru.practicum.shareit.exception.EntityProcessingOfDataErrorException;
+import ru.practicum.shareit.exception.EntityRuntimeErrorException;
 import ru.practicum.shareit.model.item.Item;
 import ru.practicum.shareit.model.item.ItemRepository;
 import ru.practicum.shareit.model.user.UserRepository;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,15 +52,15 @@ public class BookingServiceImpl implements BookingService {
     public Booking add(Booking data, Long itemId, Long bookerId) {
         String itemSid = ID.concat(itemId.toString());
         String bookerSid = ID.concat(bookerId.toString());
-        if (Date.from(data.getStart()).equals(Date.from(data.getEnd()))) {
-            throw new EntityProcessingOfDataErrorException(thisService, SAME_BOOKING_DATES);
+        if (data.getStart().equals(data.getEnd())) {
+            throw new EntityRuntimeErrorException(thisService, SAME_BOOKING_DATES);
         }
         var booker = users.findById(bookerId)
                 .orElseThrow(() -> new EntityNotFoundException(thisService, USER_NOT_FOUND, bookerSid));
         var item = items.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException(thisService, ITEM_NOT_FOUND, itemSid));
         if (!item.getAvailable()) {
-            throw new EntityProcessingOfDataErrorException(thisService, ITEM_UNAVAILABLE, itemSid);
+            throw new EntityRuntimeErrorException(thisService, ITEM_UNAVAILABLE, itemSid);
         }
         data.setBooker(booker);
         data.setItem(item);
@@ -70,15 +69,17 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * @param bookingId
-     * @param itemOwnerId
-     * @param approved
-     * @return
+     * Подтверждение/отклонение запроса на аренду вещи
+     *
+     * @param bookingId идентификатор запроса на аренду
+     * @param itemOwnerId владелец вещи
+     * @param approved подтверждение/отклонение запроса на аренду вещи
+     * @return откорректированный входящий запрос на аренду с измененным владельцем статусом запроса
      */
     @Override
     public Booking approve(Long bookingId, Long itemOwnerId, Boolean approved) {
         var owner = users.findById(itemOwnerId).orElseThrow(() ->
-                        new EntityProcessingOfDataErrorException(
+                        new EntityRuntimeErrorException(
                                 thisService, USER_NOT_FOUND, ID.concat(itemOwnerId.toString()))
         );
         var booking = bookings.findById(bookingId).orElseThrow(() ->
@@ -110,14 +111,16 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * @param bookingId
-     * @param userId
-     * @return
+     * Получить информацию о запросе на бронирование автору запроса или владельцу вещи
+     *
+     * @param bookingId идентификатор запроса
+     * @param userId идентификатор автора запроса или владельца вещи
+     * @return информация о запросе на аренду
      */
     @Override
     public Booking getBooking(Long bookingId, Long userId) {
         if (!users.existsById(userId)) {
-            throw new EntityProcessingOfDataErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
+            throw new EntityRuntimeErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
         }
         var booking = bookings.findById(bookingId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, BOOKING_NOT_FOUND, ID.concat(bookingId.toString()))
@@ -132,14 +135,16 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * @param userId
-     * @param state
-     * @return
+     * Получить информацию о всех запросах на бронирование, сделанных пользователем
+     *
+     * @param userId идентификатор пользователя
+     * @param state фильтр для выбора категории состояний запросов
+     * @return список запросов по выбранной категории
      */
     @Override
     public Collection<Booking> getBookingsByUser(Long userId, BookingSearchCriteria state) {
         if (!users.existsById(userId)) {
-            throw new EntityProcessingOfDataErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
+            throw new EntityRuntimeErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
         }
         return switch (state) {
             case ALL -> bookings.findAllByBookerIdIsOrderByStartDesc(userId);
@@ -152,9 +157,11 @@ public class BookingServiceImpl implements BookingService {
     }
 
     /**
-     * @param ownerId
-     * @param state
-     * @return
+     * Получить информацию о запросах на бронирование по каждой вещи конкретного владельца.
+     *
+     * @param ownerId идентификатор пользователя
+     * @param state фильтр для выбора категории состояний запросов
+     * @return список запросов по выбранной категории
      */
     @Override
     public Collection<Booking> getBookingsByAllUserItems(Long ownerId, BookingSearchCriteria state) {

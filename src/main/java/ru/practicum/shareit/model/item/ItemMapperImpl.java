@@ -3,9 +3,13 @@ package ru.practicum.shareit.model.item;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Component;
+import ru.practicum.shareit.model.item.dto.CommentDto;
 import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 /**
  * Реализация интерфейса {@link ItemMapper}
@@ -44,6 +48,16 @@ public class ItemMapperImpl implements ItemMapper {
                 item.getName(),
                 item.getDescription(),
                 item.getAvailable());
+    }
+
+    @Override
+    public CommentDto toCommentDto(Comment comment) {
+        return new CommentDto(
+                comment.getId(),
+                comment.getAuthor().getName(),
+                comment.getComment(),
+                LocalDateTime.ofInstant(comment.getCreated(), ZoneOffset.UTC)
+        );
     }
 
 }

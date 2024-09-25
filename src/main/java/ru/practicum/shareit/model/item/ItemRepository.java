@@ -3,7 +3,6 @@ package ru.practicum.shareit.model.item;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.model.item.dto.ItemDto;
-import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.model.user.User;
 
 import java.util.Collection;

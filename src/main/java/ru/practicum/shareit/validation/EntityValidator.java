@@ -14,7 +14,8 @@ import java.util.Set;
 
 /**
  * Компонент, реализующий интерфейс {@link CustomEntityValidator}.
- * Выполняет валидацию сущностей в приложении при помощи API Jakarta Bean Validation {@linkplain jakarta.validation}.
+ * Реализация выполняет валидацию сущностей в приложении с помощью
+ * API Jakarta Bean Validation {@linkplain jakarta.validation}.
  */
 @Component
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)

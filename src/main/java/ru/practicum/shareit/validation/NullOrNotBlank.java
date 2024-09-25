@@ -10,6 +10,10 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Аннотация проверки текстовых полей на пустое значение. Значение поля null считается допустимым.
+ * Аннотация применяется для валидации текстовых полей DTO в контроллере при PATCH запросах
+ */
 @Target({ElementType.FIELD})
 @Retention(RUNTIME)
 @Documented
