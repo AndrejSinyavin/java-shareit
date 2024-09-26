@@ -37,16 +37,16 @@ public class UserController {
     static String PATCH_REQUEST = "Запрос PATCH: обновить поля {} у пользователя ID[{}]";
     static String DELETE_REQUEST = "Запрос DELETE удалить пользователя ID[{}]";
     static final String USER_ID = "user-id";
-    UserMapper mapper;
-    CustomEntityValidator validator;
-    UserService users;
+    UserMapper userMapper;
+    CustomEntityValidator entityValidator;
+    UserService userService;
 
     @GetMapping("/{user-id}")
     public UserDto get(@PathVariable(name = USER_ID)
                            @Positive(message = "ID не может быть отрицательным значением")
                            Long userId) {
         log.info(GET_REQUEST, userId);
-        var response = mapper.toUserDto(users.get(userId));
+        var response = userMapper.toUserDto(userService.get(userId));
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
@@ -55,8 +55,8 @@ public class UserController {
     @PostMapping
     public UserDto add(@RequestBody UserDtoCreate user) {
         log.info(POST_REQUEST, user.toString());
-        validator.validate(user);
-        var response = mapper.toUserDto(users.add(mapper.toAddUser(user)));
+        entityValidator.validate(user);
+        var response = userMapper.toUserDto(userService.add(userMapper.toAddUser(user)));
         log.info(RESPONSE_CREATED, response.toString());
         return response;
     }
@@ -67,8 +67,8 @@ public class UserController {
                           @Positive(message = "ID не может быть отрицательным значением")
                           Long userId) {
         log.info(PATCH_REQUEST, userId, user.toString());
-        validator.validate(user);
-        var response = mapper.toUserDto(users.update(mapper.toUpdateUser(user), userId));
+        entityValidator.validate(user);
+        var response = userMapper.toUserDto(userService.update(userMapper.toUpdateUser(user), userId));
         log.info(RESPONSE_OK, response.toString());
         return (response);
     }
@@ -79,7 +79,7 @@ public class UserController {
                            @Positive(message = "ID не может быть отрицательным значением")
                            Long userId) {
         log.info(DELETE_REQUEST, userId);
-        users.delete(userId);
+        userService.delete(userId);
         log.info(RESPONSE_NO_CONTENT);
     }
 

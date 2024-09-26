@@ -8,7 +8,8 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 import java.io.Serializable;
 
 /**
- * DTO для обновления {@link ru.practicum.shareit.model.user.User}
+ * DTO для PATCH-обновления 'пользователя' {@link ru.practicum.shareit.model.user.User}. Все поля могут быть null
+ * для выборочного обновления полей в DAO
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserDtoUpdate(

@@ -8,7 +8,7 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 import java.io.Serializable;
 
 /**
- * DTO для создания {@link ru.practicum.shareit.model.item.Comment}
+ * DTO только для создания комментария {@link ru.practicum.shareit.model.item.Comment}, приходит с фронта
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CommentDtoCreate(

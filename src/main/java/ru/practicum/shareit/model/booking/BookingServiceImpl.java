@@ -37,9 +37,9 @@ public class BookingServiceImpl implements BookingService {
     static String USER_NOT_BOOKER = "или не создавал этот запрос на бронирование";
     static String SAME_BOOKING_DATES = "Дата завершения бронирования не может совпадать с датой начала";
     String thisService = this.getClass().getSimpleName();
-    ItemRepository items;
-    UserRepository users;
-    BookingRepository bookings;
+    ItemRepository itemRepository;
+    UserRepository userRepository;
+    BookingRepository bookingRepository;
 
     /**
      * Бронирование вещи
@@ -55,9 +55,9 @@ public class BookingServiceImpl implements BookingService {
         if (data.getStart().equals(data.getEnd())) {
             throw new EntityRuntimeErrorException(thisService, SAME_BOOKING_DATES);
         }
-        var booker = users.findById(bookerId)
+        var booker = userRepository.findById(bookerId)
                 .orElseThrow(() -> new EntityNotFoundException(thisService, USER_NOT_FOUND, bookerSid));
-        var item = items.findById(itemId)
+        var item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException(thisService, ITEM_NOT_FOUND, itemSid));
         if (!item.getAvailable()) {
             throw new EntityRuntimeErrorException(thisService, ITEM_UNAVAILABLE, itemSid);
@@ -65,7 +65,7 @@ public class BookingServiceImpl implements BookingService {
         data.setBooker(booker);
         data.setItem(item);
         data.setStatus(WAITING);
-        return bookings.save(data);
+        return bookingRepository.save(data);
     }
 
     /**
@@ -78,11 +78,11 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     public Booking approve(Long bookingId, Long itemOwnerId, Boolean approved) {
-        var owner = users.findById(itemOwnerId).orElseThrow(() ->
+        var owner = userRepository.findById(itemOwnerId).orElseThrow(() ->
                         new EntityRuntimeErrorException(
                                 thisService, USER_NOT_FOUND, ID.concat(itemOwnerId.toString()))
         );
-        var booking = bookings.findById(bookingId).orElseThrow(() ->
+        var booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, BOOKING_NOT_FOUND, ID.concat(bookingId.toString()))
         );
         if (!Objects.equals(booking.getItem().getOwner().getId(), owner.getId())) {
@@ -96,14 +96,14 @@ public class BookingServiceImpl implements BookingService {
             if (booking.getStatus().equals(WAITING) && booking.getItem().getAvailable()) {
                 booking.setStatus(APPROVED);
                 booking.getItem().setAvailable(false);
-                return bookings.save(booking);
+                return bookingRepository.save(booking);
             } else {
                 return booking;
             }
         } else {
             if (booking.getStatus().equals(WAITING)) {
                 booking.setStatus(REJECTED);
-                return bookings.save(booking);
+                return bookingRepository.save(booking);
             } else {
                 return booking;
             }
@@ -119,10 +119,10 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     public Booking getBooking(Long bookingId, Long userId) {
-        if (!users.existsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new EntityRuntimeErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
         }
-        var booking = bookings.findById(bookingId).orElseThrow(() ->
+        var booking = bookingRepository.findById(bookingId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, BOOKING_NOT_FOUND, ID.concat(bookingId.toString()))
         );
         Long bookerId = booking.getBooker().getId();
@@ -143,16 +143,16 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     public Collection<Booking> getBookingsByUser(Long userId, BookingSearchCriteria state) {
-        if (!users.existsById(userId)) {
+        if (!userRepository.existsById(userId)) {
             throw new EntityRuntimeErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
         }
         return switch (state) {
-            case ALL -> bookings.findAllByBookerIdIsOrderByStartDesc(userId);
-            case WAITING -> bookings.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, WAITING);
-            case REJECTED -> bookings.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, REJECTED);
-            case CURRENT -> bookings.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, APPROVED);
-            case FUTURE -> bookings.findAllByBookerIdIsAndStartAfterOrderByStartDesc(userId, Instant.now());
-            case PAST -> bookings.findAllByBookerIdIsAndEndBeforeOrderByStartDesc(userId, Instant.now());
+            case ALL -> bookingRepository.findAllByBookerIdIsOrderByStartDesc(userId);
+            case WAITING -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, WAITING);
+            case REJECTED -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, REJECTED);
+            case CURRENT -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, APPROVED);
+            case FUTURE -> bookingRepository.findAllByBookerIdIsAndStartAfterOrderByStartDesc(userId, Instant.now());
+            case PAST -> bookingRepository.findAllByBookerIdIsAndEndBeforeOrderByStartDesc(userId, Instant.now());
         };
     }
 
@@ -165,10 +165,10 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     public Collection<Booking> getBookingsByAllUserItems(Long ownerId, BookingSearchCriteria state) {
-        if (!users.existsById(ownerId)) {
+        if (!userRepository.existsById(ownerId)) {
             throw new EntityNotFoundException(thisService, USER_NOT_FOUND, ID.concat(ownerId.toString()));
         }
-        Set<Long> itemIds = items.getItemsByOwnerId(ownerId)
+        Set<Long> itemIds = itemRepository.getItemsByOwnerId(ownerId)
                 .stream()
                 .map(Item::getId)
                 .collect(Collectors.toSet());
@@ -176,17 +176,17 @@ public class BookingServiceImpl implements BookingService {
             throw new EntityAccessDeniedException(thisService, ID.concat(ownerId.toString()), USER_NOT_HAVE_ITEMS);
         }
         return switch (state) {
-            case ALL -> bookings.findAllByBookerIdIsAndItemIdInOrderByStartDesc(
+            case ALL -> bookingRepository.findAllByBookerIdIsAndItemIdInOrderByStartDesc(
                     ownerId, itemIds);
-            case WAITING -> bookings.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
+            case WAITING -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
                     ownerId, itemIds, WAITING);
-            case REJECTED -> bookings.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
+            case REJECTED -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
                     ownerId, itemIds, REJECTED);
-            case CURRENT -> bookings.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
+            case CURRENT -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
                     ownerId, itemIds, APPROVED);
-            case FUTURE -> bookings.findAllByBookerIdIsAndItemIdInAndStartAfterOrderByStartDesc(
+            case FUTURE -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStartAfterOrderByStartDesc(
                     ownerId, itemIds, Instant.now());
-            case PAST -> bookings.findAllByBookerIdIsAndItemIdInAndEndBeforeOrderByStartDesc(
+            case PAST -> bookingRepository.findAllByBookerIdIsAndItemIdInAndEndBeforeOrderByStartDesc(
                     ownerId, itemIds, Instant.now());
         };
     }

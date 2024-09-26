@@ -9,7 +9,7 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 import java.io.Serializable;
 
 /**
- * DTO 'вещь' {@link Item}
+ * DTO 'вещь' {@link Item}, используется только для создания нового DAO 'вещь'. Null поля не допустимы согласно ТЗ
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ItemDtoCreate(

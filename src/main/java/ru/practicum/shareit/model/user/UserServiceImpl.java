@@ -20,7 +20,7 @@ public class UserServiceImpl implements UserService {
     static String USER_NOT_FOUND = "'Пользователь' не найден в репозитории";
     static String EMAIL_ALREADY_EXISTS = "Такой email уже существует ";
     String thisService = this.getClass().getSimpleName();
-    UserRepository users;
+    UserRepository userRepository;
 
     /**
      * Получение 'пользователя' по его идентификатору
@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User get(Long userId) {
-        return users.findById(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString())));
     }
@@ -44,10 +44,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public User add(User user) {
         String email = user.getEmail();
-        users.findByEmailContainingIgnoreCase(email).ifPresent(e -> {
+        userRepository.findByEmailContainingIgnoreCase(email).ifPresent(e -> {
             throw new EntityAlreadyExistsException(thisService, EMAIL_ALREADY_EXISTS, email);
         });
-        return users.save(user);
+        return userRepository.save(user);
     }
 
     /**
@@ -59,18 +59,18 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User update(User user, Long userId) {
-        var targetUser = users.findById(userId).orElseThrow(() ->
+        var targetUser = userRepository.findById(userId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, USER_NOT_FOUND, USER_ID.concat(userId.toString()))
         );
         String email = user.getEmail();
         if (email != null && email.compareToIgnoreCase(targetUser.getEmail()) != 0) {
-            users.findByEmailContainingIgnoreCase(email).ifPresent(e -> {
+            userRepository.findByEmailContainingIgnoreCase(email).ifPresent(e -> {
                 throw new EntityAlreadyExistsException(thisService, EMAIL_ALREADY_EXISTS, email);
             });
             targetUser.setEmail(email);
         }
         Optional.ofNullable(user.getName()).ifPresent(targetUser::setName);
-        return users.save(targetUser);
+        return userRepository.save(targetUser);
     }
 
     /**
@@ -80,7 +80,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public void delete(Long userId) {
-        users.deleteById(userId);
+        userRepository.deleteById(userId);
     }
 
 }

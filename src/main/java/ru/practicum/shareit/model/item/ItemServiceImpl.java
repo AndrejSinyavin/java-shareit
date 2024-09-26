@@ -43,11 +43,11 @@ public class ItemServiceImpl implements ItemService {
     static String OWNER_NOT_APPROVE_BOOKING = "Владелец не разрешал пользователю пользоваться предметом ";
     static String EMPTY_COMMENT = "Комментарий пустой или не задан";
     String thisService = this.getClass().getSimpleName();
-    ItemRepository items;
-    UserRepository users;
-    BookingRepository bookings;
-    CommentRepository comments;
-    ItemMapper mapper;
+    ItemRepository itemRepository;
+    UserRepository userRepository;
+    BookingRepository bookingRepository;
+    CommentRepository commentRepository;
+    ItemMapper itemMapper;
 
     /**
      * Получение 'предмета' по его идентификатору
@@ -57,12 +57,12 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public ItemDtoBooking get(Long itemId) {
-        var item = items.findById(itemId)
+        var item = itemRepository.findById(itemId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString())));
-        var allComments = comments.findByItem_IdOrderByAuthor_IdAsc(itemId)
+        var allComments = commentRepository.findByItem_IdOrderByAuthor_IdAsc(itemId)
                 .stream()
-                .map(mapper::toCommentDto)
+                .map(itemMapper::toCommentDto)
                 .toList();
         return new ItemDtoBooking(
                 item.getId(),
@@ -84,12 +84,12 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public Item add(Item item, Long ownerId) {
-        var owner = users.findById(ownerId)
+        var owner = userRepository.findById(ownerId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()))
                 );
         item.setOwner(owner);
-        return items.save(item);
+        return itemRepository.save(item);
     }
 
     /**
@@ -102,10 +102,10 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public Item update(Item data, Long itemId, Long ownerId) {
-        if (!users.existsById(ownerId)) {
+        if (!userRepository.existsById(ownerId)) {
             throw new EntityNotFoundException(thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()));
         }
-        var targetItem = items.findById(itemId).orElseThrow(() ->
+        var targetItem = itemRepository.findById(itemId).orElseThrow(() ->
                 new EntityNotFoundException(thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString())));
         if (!ownerId.equals(targetItem.getOwner().getId())) {
             throw new EntityAccessDeniedException(
@@ -115,7 +115,7 @@ public class ItemServiceImpl implements ItemService {
         Optional.ofNullable(data.getName()).ifPresent(targetItem::setName);
         Optional.ofNullable(data.getDescription()).ifPresent(targetItem::setDescription);
         Optional.ofNullable(data.getAvailable()).ifPresent(targetItem::setAvailable);
-            return items.save(targetItem);
+            return itemRepository.save(targetItem);
         }
 
     /**
@@ -126,12 +126,12 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public Collection<ItemDtoBooking> getItemsByOwner(Long ownerId) {
-        var owner = users.findById(ownerId)
+        var owner = userRepository.findById(ownerId)
                 .orElseThrow(() ->
                         new EntityNotFoundException(
                                 thisService, OWNER_NOT_FOUND, OWNER_ID.concat(ownerId.toString()))
                 );
-        var allOwnersItems = items.getAllByOwnerOrderById(owner);
+        var allOwnersItems = itemRepository.getAllByOwnerOrderById(owner);
         var allOwnersItemDtoBookings = new HashMap<Long, ItemDtoBooking>();
         var itemIds = allOwnersItems
                 .stream()
@@ -149,7 +149,7 @@ public class ItemServiceImpl implements ItemService {
                 ))
                 .map(ItemDto::id)
                 .toList();
-        var allBooking = bookings.getAllByItemIdIn(itemIds);
+        var allBooking = bookingRepository.getAllByItemIdIn(itemIds);
         var now = LocalDateTime.now();
         allBooking.forEach(
                 booking -> {
@@ -194,7 +194,7 @@ public class ItemServiceImpl implements ItemService {
         if (search == null || search.isBlank()) {
             return List.of();
         } else {
-            return items.searchSubstring(search);
+            return itemRepository.searchSubstring(search);
         }
     }
 
@@ -211,17 +211,17 @@ public class ItemServiceImpl implements ItemService {
         if (comment == null || comment.text().isBlank()) {
             throw new EntityValidateException(thisService, EMPTY_COMMENT);
         }
-        var item = items.findById(itemId).orElseThrow(() ->
+        var item = itemRepository.findById(itemId).orElseThrow(() ->
                 new EntityNotFoundException(
                         thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString()))
         );
-        var user = users.findById(userId).orElseThrow(() ->
+        var user = userRepository.findById(userId).orElseThrow(() ->
                 new EntityNotFoundException(
                         thisService, OWNER_NOT_FOUND, OWNER_ID.concat(userId.toString())
                 )
         );
         var now = LocalDateTime.now().toInstant(UTC);
-        var booking = bookings.findByItemIsAndBookerIs(item, user).orElseThrow(
+        var booking = bookingRepository.findByItemIsAndBookerIs(item, user).orElseThrow(
                         () -> new EntityNotFoundException(
                                 thisService,
                                 USER_NOT_CREATE_BOOKING,
@@ -243,7 +243,7 @@ public class ItemServiceImpl implements ItemService {
                     thisService, USER_NOT_FINISHED_USE_ITEM.concat(ITEM_ID).concat(itemId.toString())
             );
         }
-        return comments.save(new Comment(0L, item, user, comment.text(), Instant.now()));
+        return commentRepository.save(new Comment(0L, item, user, comment.text(), Instant.now()));
     }
 
 }

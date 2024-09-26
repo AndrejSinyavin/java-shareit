@@ -6,7 +6,7 @@ import ru.practicum.shareit.model.user.User;
 import java.io.Serializable;
 
 /**
- * DTO 'пользователь' {@link User}
+ * DTO 'пользователь' {@link User} для отправки на фронт
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserDto(

@@ -53,9 +53,9 @@ public class BookingController {
     static final String BOOKING_ID = "booking-id";
     static final String ALL = "ALL";
     String thisService = this.getClass().getSimpleName();
-    CustomEntityValidator validator;
-    BookingMapper mapper;
-    BookingService bookers;
+    CustomEntityValidator entityValidator;
+    BookingMapper bookingMapper;
+    BookingService bookingService;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -65,9 +65,9 @@ public class BookingController {
                                     Long bookerId)  {
         log.info(POST_REQUEST, bookerId, booking.itemId());
         checkSharerHeader(bookerId);
-        validator.validate(booking);
-        var response = mapper.toBookingDto(
-                bookers.add(mapper.toBooking(booking), booking.itemId(), bookerId)
+        entityValidator.validate(booking);
+        var response = bookingMapper.toBookingDto(
+                bookingService.add(bookingMapper.toBooking(booking), booking.itemId(), bookerId)
         );
         log.info(RESPONSE_CREATED.concat(BOOKER_ID), response.toString(), bookerId);
         return response;
@@ -85,7 +85,7 @@ public class BookingController {
                                      ) {
         log.info(PATCH_REQUEST, bookingId, ownerId, approved);
         checkSharerHeader(ownerId);
-        var response = mapper.toBookingDto(bookers.approve(bookingId, ownerId, approved));
+        var response = bookingMapper.toBookingDto(bookingService.approve(bookingId, ownerId, approved));
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
@@ -99,7 +99,7 @@ public class BookingController {
                                  Long userId) {
         log.info(GET_BOOKING, bookingId, userId);
         checkSharerHeader(userId);
-        var response = mapper.toBookingDto(bookers.getBooking(bookingId, userId));
+        var response = bookingMapper.toBookingDto(bookingService.getBooking(bookingId, userId));
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
@@ -112,9 +112,9 @@ public class BookingController {
                                           String state) {
         log.info(GET_BOOKINGS, userId, state);
         checkSharerHeader(userId);
-        var response = bookers.getBookingsByUser(userId, checkState(state))
+        var response = bookingService.getBookingsByUser(userId, checkState(state))
                 .stream()
-                .map(mapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .toList();
         log.info(RESPONSE_OK, response);
         return response;
@@ -127,9 +127,9 @@ public class BookingController {
                                            @RequestParam(value = STATE, defaultValue = ALL)
                                            String state) {
         checkSharerHeader(ownerId);
-        var response = bookers.getBookingsByAllUserItems(ownerId, checkState(state))
+        var response = bookingService.getBookingsByAllUserItems(ownerId, checkState(state))
                 .stream()
-                .map(mapper::toBookingDto)
+                .map(bookingMapper::toBookingDto)
                 .toList();
         log.info(RESPONSE_OK, response);
         return response;

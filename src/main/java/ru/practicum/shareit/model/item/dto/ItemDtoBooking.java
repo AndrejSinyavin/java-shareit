@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * DTO 'вещь' {@link Item} c датой последнего бронирования и датой ближайшего запроса на бронирование
+ * Составное DTO 'вещь' {@link Item} c датой последнего бронирования и датой ближайшего запроса на бронирование,
+ * и списком комментариев. Только для отправления на фронт
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Data

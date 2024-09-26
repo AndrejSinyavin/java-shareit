@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * DTO для создания {@link Booking}
+ * DTO для создания {@link Booking}, используется только для создания необходимых полей в DAO
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record BookingDtoCreate(

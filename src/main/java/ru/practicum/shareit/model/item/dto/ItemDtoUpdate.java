@@ -9,7 +9,8 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 import java.io.Serializable;
 
 /**
- * DTO 'вещь' {@link Item}
+ * DTO 'вещь' {@link Item} для PATCH обновления DAO 'вещь'. Все поля могут быть null для обновления только
+ * поступивших в API запросе полей
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ItemDtoUpdate(

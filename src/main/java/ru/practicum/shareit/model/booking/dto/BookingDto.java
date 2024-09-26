@@ -10,7 +10,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * DTO 'бронирование' {@link Booking}
+ * DTO 'бронирование' для {@link Booking}. Используется для возврата на фронт только необходимой информации.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record BookingDto(

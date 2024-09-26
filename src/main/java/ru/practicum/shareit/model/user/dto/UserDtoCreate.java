@@ -9,7 +9,8 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 import java.io.Serializable;
 
 /**
- * DTO для создания {@link ru.practicum.shareit.model.user.User}
+ * DTO для создания 'пользователя' {@link ru.practicum.shareit.model.user.User}. Минимальный необходимый набор полей.
+ * Обязательный email для однозначной идентификации пользователя, поле 'name' необязательное
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record UserDtoCreate(

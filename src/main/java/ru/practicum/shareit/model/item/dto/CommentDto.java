@@ -6,7 +6,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * DTO для {@link ru.practicum.shareit.model.item.Comment}
+ * DTO для комментария {@link ru.practicum.shareit.model.item.Comment}, только для возврата на фронт
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CommentDto(
