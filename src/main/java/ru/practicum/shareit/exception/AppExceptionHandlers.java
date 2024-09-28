@@ -22,7 +22,7 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RestControllerAdvice
 public class AppExceptionHandlers {
-    static String BLANK = ". ";
+    static String SEPARATOR = ". ";
     static String BAD_REQUEST = "'400 Bad Request' ";
     static String CONFLICT = "'409 Conflict' ";
     static String NOT_FOUND = "'404 Not Found' ";
@@ -32,6 +32,7 @@ public class AppExceptionHandlers {
     static String INCORRECT_REQUEST = "Неправильные или отсутствующие в запросе поля, заголовки, переменные пути.";
     static String INCORRECT_FIELDS = "Обнаружены некорректные параметры в запросе.";
     static String ENTITY_NOT_FOUND = "Не найден объект, необходимый для выполнения запроса.";
+    static String REQUEST_COULD_NOT_BE_PROCESSED = "Невозможно выполнить запрос.";
     static String SERVER_ERROR = "Сервер не смог обработать запрос.";
     static String SERVER_FAILURE = "Сбой в работе сервера.";
     static String VALIDATE_CONTROLLER = "Валидация запроса в контроллере.";
@@ -48,11 +49,27 @@ public class AppExceptionHandlers {
     @ExceptionHandler({EntityValidateException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequestResponse(final EntityValidateException e) {
-        log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().values(), e.getStackTrace());
+        return warnBadRequest(e, INCORRECT_REQUEST);
+    }
+
+    private ErrorResponse warnBadRequest(EntityValidateException e, String incorrectRequest) {
+        log.warn(LOG_RESPONSE_THREE, BAD_REQUEST, e.getErrors().toString(), e.getStackTrace());
         Map<String, String> errors = new LinkedHashMap<>();
-        errors.put(BAD_REQUEST, INCORRECT_REQUEST);
+        errors.put(BAD_REQUEST, incorrectRequest);
         errors.putAll(e.getErrors());
         return new ErrorResponse(errors);
+    }
+
+    /**
+     * Обработчик исключений для ответов BAD_REQUEST при невозможности обработки данных в сервисном слое
+     *
+     * @param e перехваченное исключение
+     * @return стандартный API-ответ об ошибке ErrorResponse с описанием ошибки и вероятных причинах
+     */
+    @ExceptionHandler({EntityRuntimeErrorException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleErrorInProcessingOfDataResponse(final EntityRuntimeErrorException e) {
+        return warnBadRequest(e, REQUEST_COULD_NOT_BE_PROCESSED);
     }
 
     /**
@@ -65,7 +82,7 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleConflictRequestResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FOUR, CONFLICT, e.getMessage(), e.getError(), e.getStackTrace());
-        return new ErrorResponse(CONFLICT, e.getMessage().concat(BLANK).concat(e.getError()));
+        return new ErrorResponse(CONFLICT, e.getMessage().concat(SEPARATOR).concat(e.getError()));
     }
 
     /**
@@ -78,7 +95,7 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleAccessDeniedResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FOUR, FORBIDDEN, e.getMessage(), e.getError(), e.getStackTrace());
-        return new ErrorResponse(FORBIDDEN, e.getMessage().concat(BLANK).concat(e.getError()));
+        return new ErrorResponse(FORBIDDEN, e.getMessage().concat(SEPARATOR).concat(e.getError()));
     }
 
     /**
@@ -105,7 +122,10 @@ public class AppExceptionHandlers {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundErrorResponse(final AppException e) {
         log.warn(LOG_RESPONSE_FIVE, NOT_FOUND, ENTITY_NOT_FOUND, e.getError(), e.getMessage(), e.getStackTrace());
-        return new ErrorResponse(NOT_FOUND.concat(ENTITY_NOT_FOUND), e.getError().concat(BLANK).concat(e.getMessage()));
+        return new ErrorResponse(
+                NOT_FOUND.concat(ENTITY_NOT_FOUND),
+                e.getError().concat(SEPARATOR).concat(e.getMessage())
+        );
     }
 
     /**
@@ -119,7 +139,10 @@ public class AppExceptionHandlers {
     public ErrorResponse handleServerInternalErrorResponse(final AppException e) {
         log.error(LOG_RESPONSE_FIVE, INTERNAL_SERVER_ERROR.concat(SERVER_ERROR),
                 e.getSource(), e.getError(), e.getMessage(), e.getStackTrace());
-        return new ErrorResponse(INTERNAL_SERVER_ERROR, SERVER_ERROR.concat(BLANK).concat(e.getLocalizedMessage()));
+        return new ErrorResponse(
+                INTERNAL_SERVER_ERROR,
+                SERVER_ERROR.concat(SEPARATOR).concat(e.getLocalizedMessage())
+        );
     }
 
     /**

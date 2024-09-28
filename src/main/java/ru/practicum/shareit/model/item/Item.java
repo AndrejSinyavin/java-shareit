@@ -1,8 +1,7 @@
-package ru.practicum.shareit.model.booking;
+package ru.practicum.shareit.model.item;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,44 +14,39 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.model.item.Item;
 import ru.practicum.shareit.model.user.User;
 import ru.practicum.shareit.validation.ValidatedEntity;
 
-import java.time.Instant;
-
 /**
- * Сущность 'бронирование'
+ * Сущность 'вещь'
  */
 @Entity
-@Table(name = "bookings")
+@Table(name = "items")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class Booking implements ValidatedEntity {
+public class Item implements ValidatedEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     Long id;
 
-    @Column(name = "start", nullable = false)
-    Instant start;
+    @Column(name = "name", nullable = false)
+    String name;
 
-    @Column(name = "finish", nullable = false)
-    Instant end;
+    @Column(name = "description", nullable = false)
+    String description;
 
-    @JoinColumn(name = "item", nullable = false)
+    @Column(name = "available", nullable = false)
+    Boolean available;
+
     @ManyToOne()
-    Item item;
+    @JoinColumn(name = "owner", nullable = false)
+    User owner;
 
-    @JoinColumn(name = "booker", nullable = false)
-    @ManyToOne()
-    User booker;
-
-    @Column(name = "status", nullable = false)
-    @Enumerated
-    BookingStatus status;
+    @Column(name = "request", nullable = false)
+    Long request;
 
 }

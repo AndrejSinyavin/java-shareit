@@ -13,7 +13,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Компонент, реализующий интерфейс {@link CustomEntityValidator}. Выполняет валидацию сущностей в приложении при помощи
+ * Компонент, реализующий интерфейс {@link CustomEntityValidator}.
+ * Реализация выполняет валидацию сущностей в приложении с помощью
  * API Jakarta Bean Validation {@linkplain jakarta.validation}.
  */
 @Component
@@ -28,10 +29,9 @@ public class EntityValidator implements CustomEntityValidator {
      * Метод проверяет поля принимаемого объекта, помеченные аннотациями валидации.
      *
      * @param data сущность, объявленная с использованием интерфейса {@link ValidatedEntity}
-     * @return этот же объект, если валидация успешно выполнена
      */
     @Override
-    public ValidatedEntity validate(ValidatedEntity data) {
+    public void validate(ValidatedEntity data) {
         Set<ConstraintViolation<Object>> violations;
         Map<String, String> errors = new LinkedHashMap<>();
         try {
@@ -48,7 +48,6 @@ public class EntityValidator implements CustomEntityValidator {
             throw new EntityValidateException(
                     this.getClass().getSimpleName(), VALIDATION_ERROR, INCORRECT_FIELDS, errors);
         }
-        return data;
     }
 
 }

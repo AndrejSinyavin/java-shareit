@@ -1,20 +1,18 @@
 package ru.practicum.shareit.model.item.dto;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.validation.ValidatedEntity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import ru.practicum.shareit.model.item.Item;
+
+import java.io.Serializable;
 
 /**
- * DTO 'вещь'
+ * DTO 'вещь' {@link Item}, используется только для передачи фронту доступной для просмотра информации
  */
-@Data
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-public class ItemDto implements ValidatedEntity {
-        Long id;
-        String name;
-        String description;
-        Boolean available;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public record ItemDto(
+        Long id,
+        String name,
+        String description,
+        Boolean available
+) implements Serializable {
 }

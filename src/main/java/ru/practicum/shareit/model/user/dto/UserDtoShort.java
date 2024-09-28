@@ -6,12 +6,11 @@ import ru.practicum.shareit.model.user.User;
 import java.io.Serializable;
 
 /**
- * DTO 'пользователь' {@link User} для отправки на фронт
+ * 'Короткий' DTO {@link User} для использования в составном ответе фронту
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record UserDto(
+public record UserDtoShort(
         Long id,
-        String name,
-        String email
+        String name
 ) implements Serializable {
 }
