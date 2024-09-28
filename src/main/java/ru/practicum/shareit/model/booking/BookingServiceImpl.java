@@ -17,7 +17,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.model.booking.BookingStatus.*;
+import static ru.practicum.shareit.model.booking.BookingStatus.APPROVED;
+import static ru.practicum.shareit.model.booking.BookingStatus.REJECTED;
+import static ru.practicum.shareit.model.booking.BookingStatus.WAITING;
 
 /**
  * Реализация интерфейса {@link BookingService} для работы с 'бронированием'

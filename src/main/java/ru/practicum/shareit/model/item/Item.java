@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.model.user.User;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 /**
  * Сущность 'вещь'
@@ -27,7 +26,7 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Item implements ValidatedEntity {
+public class Item {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -46,7 +45,7 @@ public class Item implements ValidatedEntity {
     @JoinColumn(name = "owner", nullable = false)
     User owner;
 
-    @Column(name = "request", nullable = false)
+    @Column(name = "request")
     Long request;
 
 }

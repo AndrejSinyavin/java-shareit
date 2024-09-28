@@ -54,7 +54,7 @@ public class ItemController {
     String thisService = this.getClass().getSimpleName();
     ItemMapper itemMapper;
     CustomEntityValidator entityValidator;
-    ItemService ititemServicems;
+    ItemService itemService;
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
@@ -63,7 +63,7 @@ public class ItemController {
         log.info(POST_REQUEST, item, ownerId);
         checkSharerHeader(ownerId);
         entityValidator.validate(item);
-        var response = itemMapper.toItemDto((ititemServicems.add(itemMapper.toItem(item), ownerId)));
+        var response = itemMapper.toItemDto((itemService.add(itemMapper.toItem(item), ownerId)));
         log.info(RESPONSE_CREATED.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
@@ -77,7 +77,7 @@ public class ItemController {
         log.info(UPDATE_REQUEST, itemId, item, ownerId);
         checkSharerHeader(ownerId);
         entityValidator.validate(item);
-        var response = itemMapper.toItemDto(ititemServicems.update(itemMapper.toItem(item), itemId, ownerId));
+        var response = itemMapper.toItemDto(itemService.update(itemMapper.toItem(item), itemId, ownerId));
         log.info(RESPONSE_OK.concat(OWNER_ID), response.toString(), ownerId);
         return response;
     }
@@ -87,7 +87,7 @@ public class ItemController {
                            @Positive(message = "ID не может быть отрицательным значением")
                            Long itemId) {
         log.info(GET_ITEM_REQUEST, itemId);
-        var response = ititemServicems.get(itemId);
+        var response = itemService.get(itemId);
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
@@ -96,7 +96,7 @@ public class ItemController {
     public Collection<ItemDtoBooking> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(GET_OWNER_LIST_REQUEST, ownerId);
         checkSharerHeader(ownerId);
-        var response = ititemServicems.getItemsByOwner(ownerId);
+        var response = itemService.getItemsByOwner(ownerId);
         log.info(RESPONSE_OK, response);
         return response;
     }
@@ -104,7 +104,7 @@ public class ItemController {
     @GetMapping("/search")
     public Collection<ItemDto> search(@RequestParam(value = SEARCH_STRING) String searchString) {
         log.info(FIND_ITEM_REQUEST, searchString);
-        var response = ititemServicems.search(searchString)
+        var response = itemService.search(searchString)
                 .stream()
                 .map(itemMapper::toItemDto)
                 .toList();
@@ -120,7 +120,7 @@ public class ItemController {
             @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(ADD_COMMENT_REQUEST, ownerId, itemId, comment);
         checkSharerHeader(ownerId);
-        var response = itemMapper.toCommentDto(ititemServicems.addComment(ownerId, itemId, comment));
+        var response = itemMapper.toCommentDto(itemService.addComment(ownerId, itemId, comment));
         log.info(RESPONSE_CREATED, response);
         return response;
     }

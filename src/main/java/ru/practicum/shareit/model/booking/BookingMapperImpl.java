@@ -28,7 +28,7 @@ public class BookingMapperImpl implements BookingMapper {
                 LocalDateTime.ofInstant(booking.getStart(), ZoneOffset.UTC),
                 LocalDateTime.ofInstant(booking.getEnd(), ZoneOffset.UTC),
                 booking.getStatus(),
-                new ItemDtoShort(item.getId(), item.getName()),
+                new ItemDtoShort(item.getId(), item.getName(), item.getOwner().getId()),
                 new UserDtoShort(booker.getId(), booker.getName())
         );
     }

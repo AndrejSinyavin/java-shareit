@@ -17,7 +17,6 @@ import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.model.item.Item;
 import ru.practicum.shareit.model.user.User;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 import java.time.Instant;
 
@@ -31,7 +30,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Booking implements ValidatedEntity {
+public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

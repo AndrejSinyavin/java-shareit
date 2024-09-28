@@ -1,8 +1,8 @@
 package ru.practicum.shareit.model.booking.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import ru.practicum.shareit.model.booking.BookingStatus;
 import ru.practicum.shareit.model.booking.Booking;
+import ru.practicum.shareit.model.booking.BookingStatus;
 import ru.practicum.shareit.model.item.dto.ItemDtoShort;
 import ru.practicum.shareit.model.user.dto.UserDtoShort;
 

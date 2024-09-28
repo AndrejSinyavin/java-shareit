@@ -12,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 /**
  * Сущность 'пользователь'
@@ -24,7 +23,7 @@ import ru.practicum.shareit.validation.ValidatedEntity;
 @NoArgsConstructor
 @Getter
 @Setter
-public class User implements ValidatedEntity {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

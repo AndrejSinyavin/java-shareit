@@ -6,6 +6,7 @@ import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.user.User;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -22,4 +23,8 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     Collection<ItemDto> getAllByOwnerOrderById(User owner);
 
     Set<Item> getItemsByOwnerId(Long ownerId);
+
+    List<Item> findByRequestOrderByOwner_IdAsc(Long request);
+
+    List<Item> findByRequestIn(Collection<Long> ids);
 }

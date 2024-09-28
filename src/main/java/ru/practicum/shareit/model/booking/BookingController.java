@@ -24,7 +24,7 @@ import ru.practicum.shareit.validation.CustomEntityValidator;
 import java.util.Collection;
 import java.util.Optional;
 
-import static ru.practicum.shareit.model.booking.BookingSearchCriteria.*;
+import static ru.practicum.shareit.model.booking.BookingSearchCriteria.valueOf;
 
 /**
  * Контроллер обработки REST-запросов для работы с 'бронированием вещей'

@@ -11,6 +11,7 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ItemDtoShort(
         Long id,
-        String name
+        String name,
+        Long ownerId
 ) implements Serializable {
 }

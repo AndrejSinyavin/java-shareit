@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.shareit.model.user.User;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 import java.time.Instant;
 
@@ -29,7 +28,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @Getter
 @Setter
-public class Comment implements ValidatedEntity {
+public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

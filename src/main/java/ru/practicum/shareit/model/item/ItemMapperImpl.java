@@ -27,7 +27,7 @@ public class ItemMapperImpl implements ItemMapper {
                 item.description(),
                 item.available(),
                 null,
-                null);
+                item.requestId());
     }
 
     @Override
