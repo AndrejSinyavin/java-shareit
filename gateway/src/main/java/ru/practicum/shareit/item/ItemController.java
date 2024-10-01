@@ -21,7 +21,6 @@ import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.item.dto.CommentDtoCreate;
 import ru.practicum.shareit.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.item.dto.ItemDtoUpdate;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Optional;
 
@@ -35,31 +34,31 @@ public class ItemController {
     static String RESPONSE = "Response: {}";
     static String OWNER_UNDEFINED = "Не указан владелец вещи";
     static String ABSENT_HEADER = "Отсутствует заголовок ";
+    static String EMPTY_SEARCH = "Поисковый запрос пустой ";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String ITEM_ID = "item-id";
     static final String SEARCH_STRING = "text";
+    static final String POSITIVE = "ID может быть только положительным значением";
     String thisService = this.getClass().getSimpleName();
-    CustomEntityValidator entityValidator;
     ItemClient itemClient;
 
     @PostMapping
     public Object add(@RequestBody @Valid ItemDtoCreate item,
-                       @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
+                      @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE)
+                      Long ownerId) {
         checkSharerHeader(ownerId);
-        entityValidator.validate(item);
         var response = itemClient.add(item, ownerId);
         log.info(RESPONSE, response);
         return response;
     }
 
     @PatchMapping("/{item-id}")
-    public Object update(@RequestBody ItemDtoUpdate item,
-                          @Positive(message = "ID не может быть отрицательным значением")
-                          @PathVariable(value = ITEM_ID) long itemId,
-                          @RequestHeader(value = HEADER_SHARER, required = false) long ownerId
+    public Object update(@RequestBody @Valid ItemDtoUpdate item,
+                         @PathVariable(value = ITEM_ID) @Positive(message = POSITIVE) long itemId,
+                         @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE)
+                         long ownerId
     ) {
         checkSharerHeader(ownerId);
-        entityValidator.validate(item);
         var response = itemClient.update(item, ownerId, itemId);
         log.info(RESPONSE, response);
         return response;
@@ -67,8 +66,7 @@ public class ItemController {
 
     @GetMapping("/{item-id}")
     public Object get(@PathVariable(value = ITEM_ID)
-                      @Positive(message = "ID не может быть отрицательным значением")
-                      long itemId) {
+                      @Positive(message = POSITIVE) long itemId) {
         var response = itemClient.get(itemId);
         log.info(RESPONSE, response);
         return response;
@@ -76,8 +74,7 @@ public class ItemController {
 
     @GetMapping
     public ResponseEntity<Object> list(@RequestHeader(value = HEADER_SHARER, required = false)
-                                       @Positive(message = "ID не может быть отрицательным значением")
-                                       long ownerId) {
+                                       @Positive(message = POSITIVE) long ownerId) {
         checkSharerHeader(ownerId);
         var response = itemClient.list(ownerId);
         log.info(RESPONSE, response);
@@ -86,18 +83,18 @@ public class ItemController {
 
     @GetMapping("/search")
     public ResponseEntity<Object> search(@RequestParam(value = SEARCH_STRING) String searchString) {
+        if (searchString == null || searchString.isBlank()) {
+            throw new EntityValidateException(thisService, EMPTY_SEARCH);
+        }
         var response = itemClient.search(searchString);
         log.info(RESPONSE, response);
         return response;
     }
 
     @PostMapping("/{item-id}/comment")
-    private Object addComment(
-            @RequestBody CommentDtoCreate comment,
-            @Positive(message = "ID не может быть отрицательным значением")
-            @PathVariable(value = ITEM_ID) long itemId,
-            @Positive(message = "ID не может быть отрицательным значением")
-            @RequestHeader(value = HEADER_SHARER, required = false) long ownerId) {
+    public Object addComment(@RequestBody @Valid CommentDtoCreate comment,
+            @PathVariable(value = ITEM_ID) @Positive(message = POSITIVE) long itemId,
+            @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) long ownerId) {
         checkSharerHeader(ownerId);
         var response = itemClient.addComment(comment, ownerId, itemId);
         log.info(RESPONSE, response);

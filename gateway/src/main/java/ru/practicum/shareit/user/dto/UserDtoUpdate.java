@@ -3,7 +3,6 @@ package ru.practicum.shareit.user.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import ru.practicum.shareit.validation.NullOrNotBlank;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 import java.io.Serializable;
 
@@ -18,5 +17,6 @@ public record UserDtoUpdate(
 
         @Email(message = "Неверный формат для email")
         String email
-) implements Serializable, ValidatedEntity {
+
+) implements Serializable {
 }

@@ -1,6 +1,5 @@
 package ru.practicum.shareit.model.request;
 
-import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -14,14 +13,11 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.model.request.dto.ItemRequestDto;
 import ru.practicum.shareit.model.request.dto.ItemRequestDtoCreate;
 import ru.practicum.shareit.model.request.dto.ItemRequestDtoWithAnswer;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Контроллер обработки REST-запросов для работы с запросами на добавление вещей, отсутствующих в общем списке
@@ -35,8 +31,6 @@ public class ItemRequestController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     static String POST_REQUEST = "Запрос POST: создать запрос от 'пользователя' ID[{}] на добавление вещи [{}]";
-    static String USER_UNDEFINED = "Не указан ID пользователя, создавшего запрос на сервер";
-    static String ABSENT_HEADER = "Отсутствует заголовок ";
     static String GET_ONE_REQUEST =
             "Запрос GET: просмотреть все предложения по запросу на аренду предмета ID[{}]";
     static String GET_ALL_BY_OWNER_REQUESTS =
@@ -45,8 +39,6 @@ public class ItemRequestController {
             "Запрос GET: просмотреть все запросы всех пользователей";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String REQUEST_ID = "request-id";
-    String thisService = this.getClass().getSimpleName();
-    CustomEntityValidator dtoValidator;
     ItemRequestMapper itemRequestMapper;
     ItemRequestService itemRequestService;
 
@@ -54,11 +46,8 @@ public class ItemRequestController {
     @PostMapping
     public ItemRequestDto createItemRequest(@RequestBody final ItemRequestDtoCreate requestBody,
                                             @RequestHeader(value = HEADER_SHARER, required = false)
-                                            @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                             final Long ownerId) {
         log.info(POST_REQUEST, ownerId, requestBody.description());
-        checkSharerHeader(ownerId);
-        dtoValidator.validate(requestBody);
         var response = itemRequestMapper.toItemRequestDto(
                 itemRequestService.add(itemRequestMapper.toItemRequest(requestBody), ownerId));
         log.info(RESPONSE_CREATED.concat(response.toString()));
@@ -69,10 +58,8 @@ public class ItemRequestController {
     public ItemRequestDtoWithAnswer getItemRequest(@PathVariable(value = REQUEST_ID)
                                          final Long requestId,
                                          @RequestHeader(value = HEADER_SHARER, required = false)
-                                         @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                          final Long ownerId) {
         log.info(GET_ONE_REQUEST, requestId);
-        checkSharerHeader(ownerId);
         var response = itemRequestService.getItemRequest(requestId, ownerId);
         log.info(RESPONSE_OK.concat(response.toString()));
         return response;
@@ -81,7 +68,6 @@ public class ItemRequestController {
     @GetMapping
     public List<ItemRequestDtoWithAnswer> getAllOwnersRequests(
                                     @RequestHeader(value = HEADER_SHARER, required = false)
-                                    @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                     final Long ownerId) {
         log.info(GET_ALL_BY_OWNER_REQUESTS, ownerId);
         var response = itemRequestService.getAllOwnersRequests(ownerId);
@@ -92,20 +78,11 @@ public class ItemRequestController {
     @GetMapping("/all")
     public List<ItemRequestDto> getAllOtherUsersRequests(
                                     @RequestHeader(value = HEADER_SHARER, required = false)
-                                    @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                     final Long ownerId) {
         log.info(GET_ALL_OTHER_USERS_REQUESTS);
         var response = itemRequestService.getAllRequest(ownerId);
         log.info(RESPONSE_OK);
         return response;
-    }
-
-    private void checkSharerHeader(Long userId) {
-        Optional.ofNullable(userId).orElseThrow(
-                () -> new EntityValidateException(
-                        thisService, USER_UNDEFINED, ABSENT_HEADER.concat(HEADER_SHARER)
-                )
-        );
     }
 
 }

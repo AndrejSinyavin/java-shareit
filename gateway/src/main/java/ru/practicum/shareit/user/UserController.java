@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.practicum.shareit.user.dto.UserDtoCreate;
 import ru.practicum.shareit.user.dto.UserDtoUpdate;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 @Controller
 @RequestMapping(path = "/users")
@@ -28,12 +27,11 @@ import ru.practicum.shareit.validation.CustomEntityValidator;
 public class UserController {
     static final String USER_ID = "user-id";
     static final String RESPONSE = "Response: {}";
-    CustomEntityValidator entityValidator;
+    static final String POSITIVE = "ID может быть только положительным значением";
     UserClient userClient;
 
     @PostMapping
     public Object addUser(@RequestBody @Valid UserDtoCreate user) {
-        entityValidator.validate(user);
         var response = userClient.add(user);
         log.info(RESPONSE, response);
         return response;
@@ -41,28 +39,21 @@ public class UserController {
 
     @PatchMapping("/{user-id}")
     public Object updateUser(@RequestBody @Valid UserDtoUpdate user,
-                             @PathVariable(name = USER_ID)
-                             @Positive(message = "ID не может быть отрицательным значением")
-                             long userId) {
-        entityValidator.validate(user);
+                             @PathVariable(name = USER_ID) @Positive(message = POSITIVE) long userId) {
         var response = userClient.update(user, userId);
         log.info(RESPONSE, response);
         return response;
     }
 
     @GetMapping("/{user-id}")
-    public Object getUser(@PathVariable(name = USER_ID)
-                          @Positive(message = "ID не может быть отрицательным значением")
-                          long userId) {
+    public Object getUser(@PathVariable(name = USER_ID) @Positive(message = POSITIVE) long userId) {
         var response = userClient.get(userId);
         log.info(RESPONSE, response);
         return response;
     }
 
     @DeleteMapping("/{user-id}")
-    public Object delete(@PathVariable(name = USER_ID)
-                       @Positive(message = "ID не может быть отрицательным значением")
-                       long userId) {
+    public Object delete(@PathVariable(name = USER_ID) @Positive(message = POSITIVE) long userId) {
         var response = userClient.delete(userId);
         log.info(RESPONSE, response);
         return response;

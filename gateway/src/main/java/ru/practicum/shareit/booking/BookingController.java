@@ -1,7 +1,11 @@
 package ru.practicum.shareit.booking;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
@@ -13,15 +17,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.Positive;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import ru.practicum.shareit.booking.dto.BookingDtoCreate;
 import ru.practicum.shareit.booking.dto.BookingSearchCriteria;
 import ru.practicum.shareit.exception.EntityValidateException;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Optional;
 
@@ -41,31 +39,24 @@ public class BookingController {
 	static final String APPROVED = "approved";
 	static final String STATE = "state";
 	static final String ALL = "ALL";
+	static final String POSITIVE = "ID может быть только положительным значением";
 	String thisService = this.getClass().getSimpleName();
-	CustomEntityValidator entityValidator;
 	BookingClient bookingClient;
 
 	@PostMapping
-	public Object createBooking(@RequestHeader(HEADER_SHARER)
-								@Positive(message = "ID 'пользователя' должен быть больше нуля")
-								long bookerId,
+	public Object createBooking(@RequestHeader(HEADER_SHARER) @Positive(message = POSITIVE) long bookerId,
 								@RequestBody @Valid BookingDtoCreate requestDto) {
 		checkSharerHeader(bookerId);
-		entityValidator.validate(requestDto);
 		var response = bookingClient.add(bookerId, requestDto);
 		log.info(RESPONSE, response);
 		return response;
 	}
 
 	@PatchMapping("/{booking-id}")
-	public Object confirmBooking(@PathVariable(value = BOOKING_ID)
-								 @Positive(message = "ID 'бронирования' должен быть положительным значением")
-								 long bookingId,
-								 @RequestHeader(value = HEADER_SHARER, required = false)
-								 @Positive(message = "ID 'пользователя' должен быть положительным значением")
-								 long ownerId,
-								 @RequestParam(value = APPROVED)
-								 boolean approved) {
+	public Object confirmBooking(
+			@PathVariable(value = BOOKING_ID) @Positive(message = POSITIVE) long bookingId,
+			@RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) long ownerId,
+			@RequestParam(value = APPROVED) boolean approved) {
 		checkSharerHeader(ownerId);
 		var response = bookingClient.approve(ownerId, bookingId, approved);
 		log.info(RESPONSE, response);
@@ -73,12 +64,8 @@ public class BookingController {
 	}
 
 	@GetMapping("/{booking-id}")
-	public Object getBooking(@PathVariable(value = BOOKING_ID)
-							 @Positive(message = "ID 'бронирования' должен быть положительным значением")
-							 long bookingId,
-							 @RequestHeader(value = HEADER_SHARER)
-							 @Positive(message = "ID 'пользователя' должен быть положительным значением")
-							 long userId) {
+	public Object getBooking(@PathVariable(value = BOOKING_ID) @Positive(message = POSITIVE) long bookingId,
+							 @RequestHeader(value = HEADER_SHARER) @Positive(message = POSITIVE) long userId) {
 		checkSharerHeader(userId);
 		var response = bookingClient.get(userId, bookingId);
 		log.info(RESPONSE, response);
@@ -87,11 +74,8 @@ public class BookingController {
 
 	@GetMapping
 	public ResponseEntity<Object> getBookingsByUser(
-											@RequestHeader(value = HEADER_SHARER, required = false)
-											@Positive(message = "ID 'пользователя' должен быть положительным значением")
-											Long userId,
-											@RequestParam(value = STATE, defaultValue = ALL)
-											String state) {
+			@RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) Long userId,
+			@RequestParam(value = STATE, defaultValue = ALL) String state) {
 		checkSharerHeader(userId);
 		checkState(state);
 		var response = bookingClient.getBookingsByUser(userId, state);
@@ -101,11 +85,8 @@ public class BookingController {
 
 	@GetMapping("/owner")
 	public ResponseEntity<Object> getBookingsForOwnerItems(
-											@RequestHeader(value = HEADER_SHARER, required = false)
-											@Positive(message = "ID 'пользователя' должен быть положительным значением")
-											Long ownerId,
-											@RequestParam(value = STATE, defaultValue = ALL)
-											String state) {
+			@RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) Long ownerId,
+			@RequestParam(value = STATE, defaultValue = ALL) String state) {
 		checkSharerHeader(ownerId);
 		checkState(state);
 		var response = bookingClient.getBookingsForOwnerItems(ownerId, state);

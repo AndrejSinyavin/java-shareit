@@ -1,9 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.annotation.Nullable;
 import ru.practicum.shareit.validation.NullOrNotBlank;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 import java.io.Serializable;
 
@@ -19,7 +17,7 @@ public record ItemDtoUpdate(
         @NullOrNotBlank(message = "Пустое описание вещи")
         String description,
 
-        @Nullable
         Boolean available
-) implements Serializable, ValidatedEntity {
+
+) implements Serializable {
 }

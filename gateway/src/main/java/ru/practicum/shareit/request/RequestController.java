@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.request.dto.ItemRequestDtoCreate;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Optional;
 
@@ -33,28 +32,24 @@ public class RequestController {
     static String ABSENT_HEADER = "Отсутствует заголовок ";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String REQUEST_ID = "request-id";
+    static final String POSITIVE = "ID может быть только положительным значением";
     String thisService = this.getClass().getSimpleName();
-    CustomEntityValidator entityValidator;
     RequestClient requestClient;
 
     @PostMapping
-    public Object createItemRequest(@RequestBody @Valid ItemRequestDtoCreate requestBody,
-                             @RequestHeader(value = HEADER_SHARER, required = false)
-                             @Positive(message = "ID 'пользователя' должен быть положительным значением")
-                             long ownerId) {
+    public Object createItemRequest(
+            @RequestBody @Valid ItemRequestDtoCreate requestBody,
+            @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) long ownerId) {
         checkSharerHeader(ownerId);
-        entityValidator.validate(requestBody);
         var response = requestClient.add(ownerId, requestBody);
         log.info(RESPONSE, response);
         return response;
     }
 
     @GetMapping("/{request-id}")
-    public Object getItemRequest(@PathVariable(value = REQUEST_ID)
-                                 long requestId,
-                                 @RequestHeader(value = HEADER_SHARER, required = false)
-                                 @Positive(message = "ID 'пользователя' должен быть положительным значением")
-                                 long ownerId) {
+    public Object getItemRequest(
+            @PathVariable(value = REQUEST_ID) @Positive(message = POSITIVE) long requestId,
+            @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) long ownerId) {
         checkSharerHeader(ownerId);
         var response = requestClient.get(ownerId, requestId);
         log.info(RESPONSE, response);
@@ -63,9 +58,7 @@ public class RequestController {
 
     @GetMapping
     public ResponseEntity<Object> getAllOwnersRequests(
-                                            @RequestHeader(value = HEADER_SHARER, required = false)
-                                            @Positive(message = "ID 'пользователя' должен быть положительным значением")
-                                            long ownerId) {
+            @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) long ownerId) {
         var response = requestClient.getAllByOwner(ownerId);
         log.info(RESPONSE, response);
         return response;
@@ -73,9 +66,7 @@ public class RequestController {
 
     @GetMapping("/all")
     public ResponseEntity<Object> getAllOtherUsersRequests(
-                                            @RequestHeader(value = HEADER_SHARER, required = false)
-                                            @Positive(message = "ID 'пользователя' должен быть положительным значением")
-                                            long ownerId) {
+            @RequestHeader(value = HEADER_SHARER, required = false) @Positive(message = POSITIVE) long ownerId) {
         var response = requestClient.getAllOtherUsers(ownerId);
         log.info(RESPONSE, response);
         return response;

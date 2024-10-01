@@ -1,6 +1,5 @@
 package ru.practicum.shareit.model.item;
 
-import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -16,17 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.model.item.dto.CommentDto;
 import ru.practicum.shareit.model.item.dto.CommentDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDto;
 import ru.practicum.shareit.model.item.dto.ItemDtoBooking;
 import ru.practicum.shareit.model.item.dto.ItemDtoCreate;
 import ru.practicum.shareit.model.item.dto.ItemDtoUpdate;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /**
  * Контроллер обработки REST-запросов для работы с 'вещами'
@@ -40,8 +36,6 @@ public class ItemController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
     static String RESPONSE_CREATED = "Ответ: '201 Created' {} ";
     static String OWNER_ID = "владелец с ID[{}]";
-    static String OWNER_UNDEFINED = "Не указан владелец вещи";
-    static String ABSENT_HEADER = "Отсутствует заголовок ";
     static String UPDATE_REQUEST = "Запрос PATCH: обновить предмет ID[{}] значениями {} владелец ID[{}]";
     static String POST_REQUEST = "Запрос POST: создать предмет {} владелец ID[{}]";
     static String GET_ITEM_REQUEST = "Запрос GET: показать предмет с ID[{}] любому пользователю";
@@ -51,9 +45,7 @@ public class ItemController {
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String ITEM_ID = "item-id";
     static final String SEARCH_STRING = "text";
-    String thisService = this.getClass().getSimpleName();
     ItemMapper itemMapper;
-    CustomEntityValidator entityValidator;
     ItemService itemService;
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -61,8 +53,6 @@ public class ItemController {
     public ItemDto add(@RequestBody() ItemDtoCreate item,
                        @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(POST_REQUEST, item, ownerId);
-        checkSharerHeader(ownerId);
-        entityValidator.validate(item);
         var response = itemMapper.toItemDto((itemService.add(itemMapper.toItem(item), ownerId)));
         log.info(RESPONSE_CREATED.concat(OWNER_ID), response.toString(), ownerId);
         return response;
@@ -70,13 +60,10 @@ public class ItemController {
 
     @PatchMapping("/{item-id}")
     public ItemDto update(@RequestBody ItemDtoUpdate item,
-                          @Positive(message = "ID не может быть отрицательным значением")
                           @PathVariable(value = ITEM_ID) Long itemId,
                           @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId
                           ) {
         log.info(UPDATE_REQUEST, itemId, item, ownerId);
-        checkSharerHeader(ownerId);
-        entityValidator.validate(item);
         var response = itemMapper.toItemDto(itemService.update(itemMapper.toItem(item), itemId, ownerId));
         log.info(RESPONSE_OK.concat(OWNER_ID), response.toString(), ownerId);
         return response;
@@ -84,7 +71,6 @@ public class ItemController {
 
     @GetMapping("/{item-id}")
     public ItemDtoBooking get(@PathVariable(value = ITEM_ID)
-                           @Positive(message = "ID не может быть отрицательным значением")
                            Long itemId) {
         log.info(GET_ITEM_REQUEST, itemId);
         var response = itemService.get(itemId);
@@ -95,7 +81,6 @@ public class ItemController {
     @GetMapping
     public Collection<ItemDtoBooking> list(@RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(GET_OWNER_LIST_REQUEST, ownerId);
-        checkSharerHeader(ownerId);
         var response = itemService.getItemsByOwner(ownerId);
         log.info(RESPONSE_OK, response);
         return response;
@@ -114,23 +99,14 @@ public class ItemController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/{item-id}/comment")
-    private CommentDto addComment(
+    public CommentDto addComment(
             @RequestBody CommentDtoCreate comment,
             @PathVariable(value = ITEM_ID) Long itemId,
             @RequestHeader(value = HEADER_SHARER, required = false) Long ownerId) {
         log.info(ADD_COMMENT_REQUEST, ownerId, itemId, comment);
-        checkSharerHeader(ownerId);
         var response = itemMapper.toCommentDto(itemService.addComment(ownerId, itemId, comment));
         log.info(RESPONSE_CREATED, response);
         return response;
-    }
-
-    private void checkSharerHeader(Long ownerId) {
-        Optional.ofNullable(ownerId).orElseThrow(
-                () -> new EntityValidateException(
-                        thisService, OWNER_UNDEFINED, ABSENT_HEADER.concat(HEADER_SHARER)
-                )
-        );
     }
 
 }

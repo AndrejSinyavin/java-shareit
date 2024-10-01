@@ -1,6 +1,5 @@
 package ru.practicum.shareit.model.user;
 
-import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.model.user.dto.UserDto;
 import ru.practicum.shareit.model.user.dto.UserDtoCreate;
 import ru.practicum.shareit.model.user.dto.UserDtoUpdate;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 /**
  * Контроллер обработки REST-запросов для работы с 'пользователями'
@@ -38,13 +36,10 @@ public class UserController {
     static String DELETE_REQUEST = "Запрос DELETE удалить пользователя ID[{}]";
     static final String USER_ID = "user-id";
     UserMapper userMapper;
-    CustomEntityValidator entityValidator;
     UserService userService;
 
     @GetMapping("/{user-id}")
-    public UserDto get(@PathVariable(name = USER_ID)
-                           @Positive(message = "ID не может быть отрицательным значением")
-                           Long userId) {
+    public UserDto get(@PathVariable(name = USER_ID) Long userId) {
         log.info(GET_REQUEST, userId);
         var response = userMapper.toUserDto(userService.get(userId));
         log.info(RESPONSE_OK, response.toString());
@@ -55,7 +50,6 @@ public class UserController {
     @PostMapping
     public UserDto add(@RequestBody UserDtoCreate user) {
         log.info(POST_REQUEST, user.toString());
-        entityValidator.validate(user);
         var response = userMapper.toUserDto(userService.add(userMapper.toAddUser(user)));
         log.info(RESPONSE_CREATED, response.toString());
         return response;
@@ -64,10 +58,8 @@ public class UserController {
     @PatchMapping("/{user-id}")
     public UserDto update(@RequestBody UserDtoUpdate user,
                           @PathVariable(name = USER_ID)
-                          @Positive(message = "ID не может быть отрицательным значением")
                           Long userId) {
         log.info(PATCH_REQUEST, userId, user.toString());
-        entityValidator.validate(user);
         var response = userMapper.toUserDto(userService.update(userMapper.toUpdateUser(user), userId));
         log.info(RESPONSE_OK, response.toString());
         return (response);
@@ -76,7 +68,6 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{user-id}")
     public void delete(@PathVariable(name = USER_ID)
-                           @Positive(message = "ID не может быть отрицательным значением")
                            Long userId) {
         log.info(DELETE_REQUEST, userId);
         userService.delete(userId);

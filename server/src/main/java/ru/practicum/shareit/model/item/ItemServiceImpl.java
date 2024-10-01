@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.exception.EntityRuntimeErrorException;
-import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.model.booking.BookingRepository;
 import ru.practicum.shareit.model.booking.BookingStatus;
 import ru.practicum.shareit.model.item.dto.CommentDtoCreate;
@@ -41,7 +40,6 @@ public class ItemServiceImpl implements ItemService {
     static String USER_NOT_USE_ITEM = "Пользователь еще не начал пользоваться предметом ";
     static String USER_NOT_FINISHED_USE_ITEM = "Пользователь еще не закончил пользоваться предметом ";
     static String OWNER_NOT_APPROVE_BOOKING = "Владелец не разрешал пользователю пользоваться предметом ";
-    static String EMPTY_COMMENT = "Комментарий пустой или не задан";
     String thisService = this.getClass().getSimpleName();
     ItemRepository itemRepository;
     UserRepository userRepository;
@@ -208,9 +206,6 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public Comment addComment(Long userId, Long itemId, CommentDtoCreate comment) {
-        if (comment == null || comment.text().isBlank()) {
-            throw new EntityValidateException(thisService, EMPTY_COMMENT);
-        }
         var item = itemRepository.findById(itemId).orElseThrow(() ->
                 new EntityNotFoundException(
                         thisService, ITEM_NOT_FOUND, ITEM_ID.concat(itemId.toString()))

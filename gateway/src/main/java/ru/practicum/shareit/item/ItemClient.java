@@ -54,12 +54,12 @@ public class ItemClient extends BaseClient {
 
     public ResponseEntity<Object> search(String text) {
         log.info(LOG_MESSAGE);
-        return get("/search?text={" + text + "}");
+        return get("/search?text=" + text);
     }
 
-    public Object addComment(CommentDtoCreate comment, long ownerId, long itemId) {
+    public ResponseEntity<Object> addComment(CommentDtoCreate comment, long ownerId, long itemId) {
         log.info(LOG_MESSAGE);
-        return post("/{" + itemId + "}/comment", ownerId, comment);
+        return post("/" + itemId + "/comment", ownerId, comment);
     }
 
 }

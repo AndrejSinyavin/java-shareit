@@ -1,6 +1,5 @@
 package ru.practicum.shareit.model.booking;
 
-import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -19,10 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.exception.EntityValidateException;
 import ru.practicum.shareit.model.booking.dto.BookingDto;
 import ru.practicum.shareit.model.booking.dto.BookingDtoCreate;
-import ru.practicum.shareit.validation.CustomEntityValidator;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import static ru.practicum.shareit.model.booking.BookingSearchCriteria.valueOf;
 
@@ -43,9 +40,7 @@ public class BookingController {
     static String GET_BOOKING = "Запрос GET: получить для просмотра запрос на бронирование ID[{}] пользователю ID[{}]";
     static String GET_BOOKINGS = "Запрос GET: получить для просмотра список всех запросов на бронирование " +
             "пользователем ID[{}] по условию STATE = [{}]";
-    static String USER_UNDEFINED = "Не указан ID пользователя, создавшего запрос на сервер";
     static String BOOKER_ID = "Создатель запроса на бронирование с ID[{}]";
-    static String ABSENT_HEADER = "Отсутствует заголовок ";
     static String BOOKING_STATE_WRONG = "Не распознан статус бронирования предмета ";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String APPROVED = "approved";
@@ -53,7 +48,6 @@ public class BookingController {
     static final String BOOKING_ID = "booking-id";
     static final String ALL = "ALL";
     String thisService = this.getClass().getSimpleName();
-    CustomEntityValidator entityValidator;
     BookingMapper bookingMapper;
     BookingService bookingService;
 
@@ -61,11 +55,8 @@ public class BookingController {
     @PostMapping
     public BookingDto createBooking(@RequestBody BookingDtoCreate booking,
                                     @RequestHeader(value = HEADER_SHARER, required = false)
-                                    @Positive(message = "ID 'пользователя' должен быть больше нуля")
                                     Long bookerId)  {
         log.info(POST_REQUEST, bookerId, booking.itemId());
-        checkSharerHeader(bookerId);
-        entityValidator.validate(booking);
         var response = bookingMapper.toBookingDto(
                 bookingService.add(bookingMapper.toBooking(booking), booking.itemId(), bookerId)
         );
@@ -75,16 +66,13 @@ public class BookingController {
 
     @PatchMapping("/{booking-id}")
     public BookingDto confirmBooking(@PathVariable(value = BOOKING_ID)
-                                     @Positive(message = "ID 'бронирования' должен быть положительным значением")
                                      Long bookingId,
                                      @RequestHeader(value = HEADER_SHARER, required = false)
-                                     @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                      Long ownerId,
                                      @RequestParam(value = APPROVED)
                                      Boolean approved
                                      ) {
         log.info(PATCH_REQUEST, bookingId, ownerId, approved);
-        checkSharerHeader(ownerId);
         var response = bookingMapper.toBookingDto(bookingService.approve(bookingId, ownerId, approved));
         log.info(RESPONSE_OK, response.toString());
         return response;
@@ -92,13 +80,10 @@ public class BookingController {
 
     @GetMapping("/{booking-id}")
     public BookingDto getBooking(@PathVariable(value = BOOKING_ID)
-                                 @Positive(message = "ID 'бронирования' должен быть положительным значением")
                                  Long bookingId,
                                  @RequestHeader(value = HEADER_SHARER)
-                                 @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                  Long userId) {
         log.info(GET_BOOKING, bookingId, userId);
-        checkSharerHeader(userId);
         var response = bookingMapper.toBookingDto(bookingService.getBooking(bookingId, userId));
         log.info(RESPONSE_OK, response.toString());
         return response;
@@ -106,12 +91,10 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingDto> getBookingsByUser(@RequestHeader(value = HEADER_SHARER, required = false)
-                                          @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                           Long userId,
                                           @RequestParam(value = STATE, defaultValue = "ALL")
                                           String state) {
         log.info(GET_BOOKINGS, userId, state);
-        checkSharerHeader(userId);
         var response = bookingService.getBookingsByUser(userId, checkState(state))
                 .stream()
                 .map(bookingMapper::toBookingDto)
@@ -122,25 +105,15 @@ public class BookingController {
 
     @GetMapping("/owner")
     public Collection<BookingDto> getBookingsForOwnerItems(@RequestHeader(value = HEADER_SHARER, required = false)
-                                           @Positive(message = "ID 'пользователя' должен быть положительным значением")
                                            Long ownerId,
                                            @RequestParam(value = STATE, defaultValue = ALL)
                                            String state) {
-        checkSharerHeader(ownerId);
         var response = bookingService.getBookingsByAllUserItems(ownerId, checkState(state))
                 .stream()
                 .map(bookingMapper::toBookingDto)
                 .toList();
         log.info(RESPONSE_OK, response);
         return response;
-    }
-
-    private void checkSharerHeader(Long userId) {
-        Optional.ofNullable(userId).orElseThrow(
-                () -> new EntityValidateException(
-                        thisService, USER_UNDEFINED, ABSENT_HEADER.concat(HEADER_SHARER)
-                )
-        );
     }
 
     private BookingSearchCriteria checkState(String state) {

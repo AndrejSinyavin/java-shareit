@@ -1,10 +1,10 @@
 package ru.practicum.shareit.booking.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import ru.practicum.shareit.validation.ValidatedEntity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ public record BookingDtoCreate(
         LocalDateTime start,
 
         @NotNull(message = "Отсутствует дата завершения 'бронирования'")
-        @FutureOrPresent(message = "Дата окончания бронирования не может быть в прошлом")
+        @Future(message = "Дата окончания бронирования не может быть в прошлом")
         LocalDateTime end
-) implements Serializable, ValidatedEntity {
+) implements Serializable {
 }
