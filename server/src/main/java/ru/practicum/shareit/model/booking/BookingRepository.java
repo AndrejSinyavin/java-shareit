@@ -17,23 +17,23 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     Collection<Booking> findAllByBookerIdIsAndStatusIsOrderByStartDesc(
             Long userId, BookingStatus bookingStatus);
 
-    Collection<Booking> findAllByBookerIdIsAndStartAfterOrderByStartDesc(Long userId, Instant now);
+    Collection<Booking> findAllByStartAfterOrderByStartDesc(Instant now);
 
-    Collection<Booking> findAllByBookerIdIsAndEndBeforeOrderByStartDesc(Long userId, Instant now);
+    Collection<Booking> findAllByEndBeforeOrderByStartDesc(Instant now);
 
-    Collection<Booking> findAllByBookerIdIsAndItemIdInOrderByStartDesc(Long ownerId, Set<Long> itemIds);
+    Collection<Booking> findAllByItemIdInOrderByStartDesc(Set<Long> itemIds);
 
-    Collection<Booking> findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
-            Long ownerId, Set<Long> itemIds, BookingStatus bookingStatus);
+    Collection<Booking> findAllByItemIdInAndStatusIsOrderByStartDesc(
+            Set<Long> itemIds, BookingStatus bookingStatus);
 
-    Collection<Booking> findAllByBookerIdIsAndItemIdInAndStartAfterOrderByStartDesc(
-            Long ownerId, Set<Long> itemIds, Instant now);
+    Collection<Booking> findAllByItemIdInAndStartAfterOrderByStartDesc(
+            Set<Long> itemIds, Instant now);
 
-    Collection<Booking> findAllByBookerIdIsAndItemIdInAndEndBeforeOrderByStartDesc(
-            Long ownerId, Set<Long> itemIds, Instant now);
+    Collection<Booking> findAllByItemIdInAndEndBeforeOrderByStartDesc(
+            Set<Long> itemIds, Instant now);
 
     Collection<Booking> getAllByItemIdIn(List<Long> itemIds);
 
-    Optional<Booking> findByItemIsAndBookerIs(Item item, User booker);
+    Optional<Booking> findByItemAndBooker(Item item, User booker);
 
 }

@@ -2,6 +2,7 @@ package ru.practicum.shareit.model.item;
 
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -31,6 +32,7 @@ import java.util.Collection;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 @RestController
+@Setter
 @RequestMapping("/items")
 public class ItemController {
     static String RESPONSE_OK = "Ответ: '200 OK' {} ";
@@ -45,7 +47,7 @@ public class ItemController {
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String ITEM_ID = "item-id";
     static final String SEARCH_STRING = "text";
-    ItemMapper itemMapper;
+    ItemMapper itemMapper = new ItemMapperImpl();
     ItemService itemService;
 
     @ResponseStatus(HttpStatus.CREATED)

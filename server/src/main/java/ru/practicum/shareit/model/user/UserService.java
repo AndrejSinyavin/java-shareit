@@ -1,5 +1,9 @@
 package ru.practicum.shareit.model.user;
 
+import ru.practicum.shareit.model.user.dto.UserDto;
+import ru.practicum.shareit.model.user.dto.UserDtoCreate;
+import ru.practicum.shareit.model.user.dto.UserDtoUpdate;
+
 /**
  * Интерфейс сервисов для работы с 'пользователями'
  */
@@ -11,7 +15,7 @@ public interface UserService {
      * @param id идентификатор 'пользователя'
      * @return искомый 'пользователь'
      */
-    User get(Long id);
+    UserDto get(Long id);
 
     /**
      * Метод добавляет 'пользователя'
@@ -19,7 +23,7 @@ public interface UserService {
      * @param user добавляемый 'пользователь'
      * @return 'пользователь' с установленным идентификатором
      */
-    User add(User user);
+    UserDto add(UserDtoCreate user);
 
     /**
      * Метод обновляет существующего 'пользователя'
@@ -28,7 +32,7 @@ public interface UserService {
      * @param id идентификатор целевого 'пользователя'
      * @return обновленный 'пользователь'
      */
-    User update(User user, Long id);
+    UserDto update(UserDtoUpdate user, Long id);
 
     /**
      * Метод удаляет 'пользователя'

@@ -39,7 +39,7 @@ public class ItemRequestController {
             "Запрос GET: просмотреть все запросы всех пользователей";
     static final String HEADER_SHARER = "X-Sharer-User-Id";
     static final String REQUEST_ID = "request-id";
-    ItemRequestMapper itemRequestMapper;
+    ItemRequestMapper itemRequestMapper = new ItemRequestMapperImpl();
     ItemRequestService itemRequestService;
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -76,7 +76,7 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAllOtherUsersRequests(
+    public List<ItemRequest> getAllOtherUsersRequests(
                                     @RequestHeader(value = HEADER_SHARER, required = false)
                                     final Long ownerId) {
         log.info(GET_ALL_OTHER_USERS_REQUESTS);

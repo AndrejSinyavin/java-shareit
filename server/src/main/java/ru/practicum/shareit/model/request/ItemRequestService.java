@@ -1,6 +1,5 @@
 package ru.practicum.shareit.model.request;
 
-import ru.practicum.shareit.model.request.dto.ItemRequestDto;
 import ru.practicum.shareit.model.request.dto.ItemRequestDtoWithAnswer;
 
 import java.util.List;
@@ -16,6 +15,6 @@ public interface ItemRequestService {
 
     List<ItemRequestDtoWithAnswer> getAllOwnersRequests(Long ownerId);
 
-    List<ItemRequestDto> getAllRequest(Long ownerId);
+    List<ItemRequest> getAllRequest(Long ownerId);
 
 }

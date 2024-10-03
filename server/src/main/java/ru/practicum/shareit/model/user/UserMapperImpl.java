@@ -45,4 +45,13 @@ public class UserMapperImpl implements UserMapper {
         );
     }
 
+    @Override
+    public User toUser(UserDto user) {
+        return new User(
+                user.id(),
+                user.name(),
+                user.email()
+        );
+    }
+
 }

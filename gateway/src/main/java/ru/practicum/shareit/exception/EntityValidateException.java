@@ -12,11 +12,6 @@ public class EntityValidateException extends AppException {
     Map<String, String> errors;
     static String EMPTY = "";
 
-    public EntityValidateException(String source, String error, String message, Map<String, String> errors) {
-        super(source, message, error);
-        this.errors = errors;
-    }
-
     public EntityValidateException(String source, String error, String message) {
         super(source, EMPTY, EMPTY);
         this.errors = Map.of(error, message);

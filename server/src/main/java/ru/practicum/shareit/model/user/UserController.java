@@ -35,13 +35,12 @@ public class UserController {
     static String PATCH_REQUEST = "Запрос PATCH: обновить поля {} у пользователя ID[{}]";
     static String DELETE_REQUEST = "Запрос DELETE удалить пользователя ID[{}]";
     static final String USER_ID = "user-id";
-    UserMapper userMapper;
     UserService userService;
 
     @GetMapping("/{user-id}")
     public UserDto get(@PathVariable(name = USER_ID) Long userId) {
         log.info(GET_REQUEST, userId);
-        var response = userMapper.toUserDto(userService.get(userId));
+        var response = userService.get(userId);
         log.info(RESPONSE_OK, response.toString());
         return response;
     }
@@ -50,7 +49,7 @@ public class UserController {
     @PostMapping
     public UserDto add(@RequestBody UserDtoCreate user) {
         log.info(POST_REQUEST, user.toString());
-        var response = userMapper.toUserDto(userService.add(userMapper.toAddUser(user)));
+        var response = userService.add(user);
         log.info(RESPONSE_CREATED, response.toString());
         return response;
     }
@@ -60,7 +59,7 @@ public class UserController {
                           @PathVariable(name = USER_ID)
                           Long userId) {
         log.info(PATCH_REQUEST, userId, user.toString());
-        var response = userMapper.toUserDto(userService.update(userMapper.toUpdateUser(user), userId));
+        var response = userService.update(user, userId);
         log.info(RESPONSE_OK, response.toString());
         return (response);
     }
