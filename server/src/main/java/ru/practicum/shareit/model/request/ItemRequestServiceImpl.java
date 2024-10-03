@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.model.item.ItemRepository;
 import ru.practicum.shareit.model.item.dto.ItemDtoShort;
-import ru.practicum.shareit.model.request.dto.ItemRequestDto;
 import ru.practicum.shareit.model.request.dto.ItemRequestDtoWithAnswer;
 import ru.practicum.shareit.model.user.UserRepository;
 
@@ -99,14 +98,15 @@ public class ItemRequestServiceImpl implements ItemRequestService {
 
     /**
      * Метод возвращает список всех запросов на аренду от всех пользователей
+     *
      * @param ownerId идентификатор пользователя, который хочет получить список
      * @return список всех запросов на аренду от всех пользователей
      */
     @Override
-    public List<ItemRequestDto> getAllRequest(Long ownerId) {
+    public List<ItemRequest> getAllRequest(Long ownerId) {
         if (!userRepository.existsById(ownerId)) {
             throw new EntityNotFoundException(thisService, USER_NOT_FOUND, ownerId.toString());
         }
-        return itemRequestRepository.findByRequester_IdNotOrderByCreatedDesc(ownerId);
+        return itemRequestRepository.findAll();
     }
 }

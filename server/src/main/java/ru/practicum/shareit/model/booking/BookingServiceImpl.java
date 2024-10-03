@@ -153,8 +153,8 @@ public class BookingServiceImpl implements BookingService {
             case WAITING -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, WAITING);
             case REJECTED -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, REJECTED);
             case CURRENT -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, APPROVED);
-            case FUTURE -> bookingRepository.findAllByBookerIdIsAndStartAfterOrderByStartDesc(userId, Instant.now());
-            case PAST -> bookingRepository.findAllByBookerIdIsAndEndBeforeOrderByStartDesc(userId, Instant.now());
+            case FUTURE -> bookingRepository.findAllByStartAfterOrderByStartDesc(Instant.now());
+            case PAST -> bookingRepository.findAllByEndBeforeOrderByStartDesc(Instant.now());
         };
     }
 
@@ -178,18 +178,12 @@ public class BookingServiceImpl implements BookingService {
             throw new EntityAccessDeniedException(thisService, ID.concat(ownerId.toString()), USER_NOT_HAVE_ITEMS);
         }
         return switch (state) {
-            case ALL -> bookingRepository.findAllByBookerIdIsAndItemIdInOrderByStartDesc(
-                    ownerId, itemIds);
-            case WAITING -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
-                    ownerId, itemIds, WAITING);
-            case REJECTED -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
-                    ownerId, itemIds, REJECTED);
-            case CURRENT -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStatusIsOrderByStartDesc(
-                    ownerId, itemIds, APPROVED);
-            case FUTURE -> bookingRepository.findAllByBookerIdIsAndItemIdInAndStartAfterOrderByStartDesc(
-                    ownerId, itemIds, Instant.now());
-            case PAST -> bookingRepository.findAllByBookerIdIsAndItemIdInAndEndBeforeOrderByStartDesc(
-                    ownerId, itemIds, Instant.now());
+            case ALL -> bookingRepository.findAllByItemIdInOrderByStartDesc(itemIds);
+            case WAITING -> bookingRepository.findAllByItemIdInAndStatusIsOrderByStartDesc(itemIds, WAITING);
+            case REJECTED -> bookingRepository.findAllByItemIdInAndStatusIsOrderByStartDesc(itemIds, REJECTED);
+            case CURRENT -> bookingRepository.findAllByItemIdInAndStatusIsOrderByStartDesc(itemIds, APPROVED);
+            case FUTURE -> bookingRepository.findAllByItemIdInAndStartAfterOrderByStartDesc(itemIds, Instant.now());
+            case PAST -> bookingRepository.findAllByItemIdInAndEndBeforeOrderByStartDesc(itemIds, Instant.now());
         };
     }
 

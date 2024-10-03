@@ -16,6 +16,7 @@ import ru.practicum.shareit.model.user.UserRepository;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -215,8 +216,8 @@ public class ItemServiceImpl implements ItemService {
                         thisService, OWNER_NOT_FOUND, OWNER_ID.concat(userId.toString())
                 )
         );
-        var now = LocalDateTime.now().toInstant(UTC);
-        var booking = bookingRepository.findByItemIsAndBookerIs(item, user).orElseThrow(
+        var now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+        var booking = bookingRepository.findByItemAndBooker(item, user).orElseThrow(
                         () -> new EntityNotFoundException(
                                 thisService,
                                 USER_NOT_CREATE_BOOKING,

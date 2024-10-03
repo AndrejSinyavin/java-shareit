@@ -48,7 +48,7 @@ public class BookingController {
     static final String BOOKING_ID = "booking-id";
     static final String ALL = "ALL";
     String thisService = this.getClass().getSimpleName();
-    BookingMapper bookingMapper;
+    BookingMapper bookingMapper = new BookingMapperImpl();
     BookingService bookingService;
 
     @ResponseStatus(HttpStatus.CREATED)
