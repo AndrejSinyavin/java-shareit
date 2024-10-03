@@ -19,6 +19,7 @@ target/
 *.iml
 *.ipr
 
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -32,3 +33,4 @@ build/
 ### VS Code ###
 .vscode/
 !/.github/workflows/api-tests.yml
+/.github/workflows/
