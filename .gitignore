@@ -3,7 +3,6 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-api-tests.yml
 
 ### STS ###
 .apt_generated
@@ -33,5 +32,3 @@ build/
 
 ### VS Code ###
 .vscode/
-!/.github/workflows/api-tests.yml
-/.github/workflows/
