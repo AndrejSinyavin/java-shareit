@@ -45,12 +45,12 @@ class ItemServiceImplDataJpaTest {
     @BeforeEach
     void setUpData() {
         userId = userService.add(new UserDtoCreate("user", "user@yandex.ru")).id();
-        bookerId = userService.add(new UserDtoCreate( "booker", "booker@yandex.ru")).id();
+        bookerId = userService.add(new UserDtoCreate("booker", "booker@yandex.ru")).id();
     }
 
     @Test
     @DisplayName("Сценарий, тестирующий создание предмета в репозитории")
-    void addTest () {
+    void addTest() {
         var newItem = new Item(0L, "item", "description", false, null, null);
         var userItems = itemService.getItemsByOwner(userId);
         assertThat("Список получен", userItems, is(notNullValue()));
@@ -69,7 +69,7 @@ class ItemServiceImplDataJpaTest {
 
     @Test
     @DisplayName("Сценарий, тестирующий получение предмета из репозитория")
-    void getTest () {
+    void getTest() {
         var newItem = new Item(0L, "item", "description", false, null, null);
         var itemId = itemService.add(newItem, userId).getId();
         var item = itemService.get(itemId);
@@ -81,7 +81,7 @@ class ItemServiceImplDataJpaTest {
 
     @Test
     @DisplayName("Сценарий, тестирующий обновление полей предмета")
-    void updateTest () {
+    void updateTest() {
         var newItem = new Item(0L, "item", "description", false, null, null);
         var updateItem = new Item(
                 0L, "update", "update", true, null, null);
@@ -120,7 +120,7 @@ class ItemServiceImplDataJpaTest {
     @Test
     @DisplayName("Сценарий, тестирующий поиск предметов, имеющих искомый шаблон в имени или описании," +
             " и предмет доступен для аренды")
-    void searchTest () {
+    void searchTest() {
         var firstId = itemService.add(
                 new Item(0L, "itemSEARCHany", "descONE", true, null, null),
                 userId).getId();

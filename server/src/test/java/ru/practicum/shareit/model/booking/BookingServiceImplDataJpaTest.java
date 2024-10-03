@@ -45,9 +45,9 @@ class BookingServiceImplDataJpaTest {
 
     @BeforeEach
     void setUpData() {
-        userId = userService.add(new UserDtoCreate( "user", "user@yandex.ru")).id();
+        userId = userService.add(new UserDtoCreate("user", "user@yandex.ru")).id();
         user = new User(userId, "user", "user@yandex.ru");
-        bookerId = userService.add(new UserDtoCreate( "booker", "booker@yandex.ru")).id();
+        bookerId = userService.add(new UserDtoCreate("booker", "booker@yandex.ru")).id();
         booker = new User(bookerId, "booker", "booker@yandex.ru");
         item = itemService.add(
                 new Item(0L, "item", "desc", true, user, null), userId);
@@ -98,7 +98,7 @@ class BookingServiceImplDataJpaTest {
     void getBookingsByUserTest() {
         approveTest();
         var itemTwo = new Item(0L, "item2", "desc2", true, user, null);
-        Long itemIdTwo = itemService.add( itemTwo, userId).getId();
+        Long itemIdTwo = itemService.add(itemTwo, userId).getId();
         Long bookingIdTwo = bookingService.add(
                 new Booking(
                         0L,

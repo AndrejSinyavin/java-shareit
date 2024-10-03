@@ -1,6 +1,5 @@
 package ru.practicum.shareit.model.item;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -77,7 +76,7 @@ class ItemControllerMockTest {
         );
         itemDtoBookingList = new ArrayList<>();
         itemList = new ArrayList<>();
-        commentDtoCreate = new CommentDtoCreate( "comment");
+        commentDtoCreate = new CommentDtoCreate("comment");
         comment = new Comment(1L, item, user, "comment", Instant.now());
     }
 

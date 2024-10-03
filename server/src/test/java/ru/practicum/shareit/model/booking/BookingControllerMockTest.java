@@ -68,7 +68,7 @@ class BookingControllerMockTest {
         userDtoShort = new UserDtoShort(1L, "user");
         bookingDto = new BookingDto(
                 1L, LocalDateTime.now(), LocalDateTime.now().plusDays(6), WAITING, itemDtoShort, userDtoShort);
-        bookingDtoCreate = new BookingDtoCreate (1L, LocalDateTime.now(), LocalDateTime.now().plusDays(6));
+        bookingDtoCreate = new BookingDtoCreate(1L, LocalDateTime.now(), LocalDateTime.now().plusDays(6));
         bookingList = List.of(booking);
     }
 
@@ -87,8 +87,7 @@ class BookingControllerMockTest {
     @Test
     void confirmBookingTest() throws Exception {
         when(bookingService.approve(anyLong(), anyLong(), anyBoolean())).thenReturn(booking);
-        mvc.perform(patch("/bookings/{bookingId}?approved={approved}"
-                        , booking.getId(), true)
+        mvc.perform(patch("/bookings/{bookingId}?approved={approved}", booking.getId(), true)
                         .content(mapper.writeValueAsString(booking.getId()))
                 .header("X-Sharer-User-Id", 1L)
                 .characterEncoding(StandardCharsets.UTF_8)

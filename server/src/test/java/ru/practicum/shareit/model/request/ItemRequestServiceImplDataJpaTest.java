@@ -17,7 +17,6 @@ import ru.practicum.shareit.model.user.UserMapper;
 import ru.practicum.shareit.model.user.UserMapperImpl;
 import ru.practicum.shareit.model.user.UserService;
 import ru.practicum.shareit.model.user.UserServiceImpl;
-import ru.practicum.shareit.model.user.dto.UserDto;
 import ru.practicum.shareit.model.user.dto.UserDtoCreate;
 
 import java.time.Clock;
@@ -45,7 +44,7 @@ class ItemRequestServiceImplDataJpaTest {
 
     @BeforeEach
     void setUpData() {
-        user = mapper.toUser(userService.add(new UserDtoCreate( "user", "user@yandex.ru")));
+        user = mapper.toUser(userService.add(new UserDtoCreate("user", "user@yandex.ru")));
         booker = mapper.toUser(userService.add(new UserDtoCreate("booker", "booker@yandex.ru")));
         request = itemRequestService.add(
                 new ItemRequest(
