@@ -1,7 +1,6 @@
 package ru.practicum.shareit.model.user;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ import ru.practicum.shareit.model.user.dto.UserDtoUpdate;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
 @Transactional
@@ -25,12 +24,6 @@ class UserServiceImplDataJpaTest {
     private final UserDtoCreate newUser = new UserDtoCreate("user", "user@mail.com");
     private final UserDtoUpdate updateUser = new UserDtoUpdate("newName", "newEmail@mail.com");
     private final UserService userService;
-
-
-    @BeforeEach
-    void setUp() {
-
-    }
 
     @Test
     @DisplayName("Сценарий, тестирующий получение пользователя из репозитория")
