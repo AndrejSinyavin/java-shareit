@@ -148,36 +148,6 @@ public class ItemServiceImpl implements ItemService {
                 ))
                 .map(ItemDto::id)
                 .toList();
-        var allBooking = bookingRepository.getAllByItemIdIn(itemIds);
-        var now = LocalDateTime.now();
-        allBooking.forEach(
-                booking -> {
-                    var item = allOwnersItemDtoBookings.get(booking.getId());
-                    var bookingStart =  LocalDateTime.ofInstant(booking.getStart(), UTC);
-                    if (bookingStart.isBefore(now)) {
-                        var previous = item.getLastBooking();
-                        if (previous == null) {
-                            previous = bookingStart;
-                        } else {
-                            if (previous.isBefore(bookingStart)) {
-                                previous = bookingStart;
-                            }
-                        }
-                        item.setLastBooking(previous);
-                    } else {
-                        var next = item.getNextBooking();
-                        if (next == null) {
-                            next = bookingStart;
-                        } else {
-                            if (next.isAfter(bookingStart)) {
-                                next = bookingStart;
-                            }
-                        }
-                        item.setNextBooking(next);
-                    }
-                }
-
-        );
         return allOwnersItemDtoBookings.values();
     }
 
@@ -190,11 +160,7 @@ public class ItemServiceImpl implements ItemService {
      */
     @Override
     public Collection<Item> search(String search) {
-        if (search == null || search.isBlank()) {
-            return List.of();
-        } else {
-            return itemRepository.searchSubstring(search);
-        }
+        return itemRepository.searchSubstring(search);
     }
 
     /**
@@ -234,10 +200,6 @@ public class ItemServiceImpl implements ItemService {
                         thisService,
                         USER_NOT_USE_ITEM.concat(ITEM_ID.concat(itemId.toString()))
                 );
-        } else if (booking.getEnd().isAfter(now)) {
-            throw new EntityRuntimeErrorException(
-                    thisService, USER_NOT_FINISHED_USE_ITEM.concat(ITEM_ID).concat(itemId.toString())
-            );
         }
         return commentRepository.save(new Comment(0L, item, user, comment.text(), Instant.now()));
     }

@@ -83,7 +83,7 @@ class ItemServiceImplTest {
 
     @Test
     @DisplayName("Сценарий, тестирующий обновление полей предмета")
-    void updateTest() {
+    void updateItemTest() {
         var newItem = new Item(0L, "item", "description", false, null, null);
         var updateItem = new Item(
                 0L, "update", "update", true, null, null);
@@ -103,8 +103,64 @@ class ItemServiceImplTest {
     }
 
     @Test
+    @DisplayName("Сценарий, тестирующий обновление полей предмета - пользователь не существует")
+    void updateItemWithoutUserTest() {
+        var newItem = new Item(0L, "item", "description", false, null, null);
+        var updateItem = new Item(
+                0L, "update", "update", true, null, null);
+        Long itemId = itemService.add(newItem, userId).getId();
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> itemService.update(updateItem, itemId, 999L));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий обновление полей предмета - предмет не существует")
+    void updateItemWithoutItemTest() {
+        var updateItem = new Item(
+                0L, "update", "update", true, null, null);
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> itemService.update(updateItem, 999L, userId));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий обновление полей предмета - пользователь обновляет не свой предмет")
+    void updateNotYourItemTest() {
+        var otherUserId = userService.add(new UserDtoCreate("other", "other@yandex.ru")).id();
+        var newItem = new Item(0L, "item", "description", false, null, null);
+        var updateItem = new Item(
+                0L, "update", "update", true, null, null);
+        Long itemId = itemService.add(newItem, userId).getId();
+        Assertions.assertThrows(EntityAccessDeniedException.class,
+                () -> itemService.update(updateItem, itemId, otherUserId));
+    }
+
+    @Test
     @DisplayName("Сценарий, тестирующий получение списка всех предметов конкретного пользователя")
     void getItemsByOwnerTest() {
+        var newItem = new Item(0L, "item", "description", false, null, null);
+        var userItems = itemService.getItemsByOwner(userId);
+        assertThat("Список получен", userItems, is(notNullValue()));
+        assertThat("У пользователя нет собственных предметов", userItems.isEmpty(), is(true));
+        var item = itemService.add(newItem, userId);
+        var result = itemService.getItemsByOwner(userId).stream().toList();
+        assertThat("Список получен", result, is(notNullValue()));
+        assertThat("У пользователя есть только один предмет", result.size(), is(1));
+        var itemDto = result.getFirst();
+        assertThat("", itemDto.getName(), is(item.getName()));
+        assertThat("", itemDto.getDescription(), is(item.getDescription()));
+        assertThat(item.getAvailable(), is(item.getAvailable()));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий получение списка всех предметов - пользователя не существует")
+    void getItemsNotExistOwnerTest() {
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> itemService.getItemsByOwner(9999L));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий получение списка предметов конкретного пользователя")
+    void getItemsByOwnerDateTest() {
         var newItem = new Item(0L, "item", "description", false, null, null);
         var userItems = itemService.getItemsByOwner(userId);
         assertThat("Список получен", userItems, is(notNullValue()));

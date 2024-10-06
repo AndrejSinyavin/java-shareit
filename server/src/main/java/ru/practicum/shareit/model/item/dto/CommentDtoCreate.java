@@ -1,6 +1,7 @@
 package ru.practicum.shareit.model.item.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.validation.constraints.NotBlank;
 
 import java.io.Serializable;
 
@@ -9,6 +10,7 @@ import java.io.Serializable;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CommentDtoCreate(
+        @NotBlank(message = "Комментарий не может быть пустым")
         String text
 ) implements Serializable {
 }
