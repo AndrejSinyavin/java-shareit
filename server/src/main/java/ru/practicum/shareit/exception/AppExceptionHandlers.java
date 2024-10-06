@@ -125,23 +125,6 @@ public class AppExceptionHandlers {
     }
 
     /**
-     * Обработчик исключений для ответов INTERNAL_SERVER_ERROR
-     *
-     * @param e перехваченное исключение
-     * @return стандартный API-ответ об ошибке ErrorResponse с описанием ошибки и вероятных причинах
-     */
-    @ExceptionHandler({InternalServiceException.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleServerInternalErrorResponse(final AppException e) {
-        log.error(LOG_RESPONSE_FIVE, INTERNAL_SERVER_ERROR.concat(SERVER_ERROR),
-                e.getSource(), e.getError(), e.getMessage(), e.getStackTrace());
-        return new ErrorResponse(
-                INTERNAL_SERVER_ERROR,
-                SERVER_ERROR.concat(SEPARATOR).concat(e.getLocalizedMessage())
-        );
-    }
-
-    /**
      * Обработчик исключений - заглушка, для обработки прочих непредусмотренных исключений.
      *
      * @param e перехваченное исключение
