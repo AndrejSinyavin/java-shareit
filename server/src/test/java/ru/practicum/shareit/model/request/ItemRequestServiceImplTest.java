@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.EntityNotFoundException;
 import ru.practicum.shareit.model.item.Item;
 import ru.practicum.shareit.model.item.ItemMapperImpl;
 import ru.practicum.shareit.model.item.ItemService;
@@ -25,6 +26,7 @@ import java.time.Instant;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DataJpaTest
 @Transactional
@@ -32,7 +34,7 @@ import static org.hamcrest.Matchers.notNullValue;
         UserMapperImpl.class})
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @DisplayName("Набор интеграционных тестов сервиса 'работы с запросами'")
-class ItemRequestServiceImplDataJpaTest {
+class ItemRequestServiceImplTest {
     private final UserService userService;
     private final ItemService itemService;
     private final ItemRequestService itemRequestService;
@@ -66,7 +68,7 @@ class ItemRequestServiceImplDataJpaTest {
 
     @Test
     @DisplayName("Сценарий, тестирующий добавление запроса на добавление предмета")
-    void addTest() {
+    void addRequestNormalTest() {
         var userId = user.getId();
         itemService.add(item, userId);
         var target = itemService.search("розовая").stream().findFirst().get();
@@ -75,15 +77,22 @@ class ItemRequestServiceImplDataJpaTest {
         assertThat(target.getDescription(), is(
                 "Розовая. Осталась от первой жены. Можете оставить себе и не возвращать :)")
         );
+    }
 
+    @Test
+    @DisplayName("Сценарий, тестирующий добавление запроса на добавление предмета при несуществующем владельце")
+    void addRequestWithoutUserTest() {
+        var userId = user.getId();
+        userService.delete(userId);
+        assertThrows(EntityNotFoundException.class, () -> itemService.add(item, userId));
     }
 
     @Test
     @DisplayName("Сценарий, тестирующий получение запроса на аренду предмета")
-    void getItemRequestTest() {
+    void getItemRequestNormalTest() {
         var userId = user.getId();
         var bookerId = booker.getId();
-        itemService.add(item, userId).getId();
+        itemService.add(item, userId);
         var dtoWithAnswer = itemRequestService.getItemRequest(this.request.getId(), bookerId);
         assertThat(dtoWithAnswer, notNullValue());
         assertThat(dtoWithAnswer.getId(), is(request.getId()));
@@ -94,11 +103,27 @@ class ItemRequestServiceImplDataJpaTest {
     }
 
     @Test
+    @DisplayName("Сценарий, тестирующий получение запроса на аренду предмета, если создающего запрос не существует")
+    void getItemRequestWithoutUserTest() {
+        var userId = user.getId();
+        userService.delete(userId);
+        assertThrows(EntityNotFoundException.class, () -> itemRequestService.getItemRequest(item.getId(), userId));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий получение запроса на аренду предмета, если предмета не существует")
+    void getItemRequestWithoutItemTest() {
+        var userId = user.getId();
+        assertThrows(EntityNotFoundException.class,
+                () -> itemRequestService.getItemRequest(item.getId() + 100, userId));
+    }
+
+    @Test
     @DisplayName("Сценарий, тестирующий получение списка всех запросов пользователя на аренду")
     void getAllOwnersRequestsTest() {
         var userId = user.getId();
         var bookerId = booker.getId();
-        itemService.add(item, userId).getId();
+        itemService.add(item, userId);
         var requestList = itemRequestService.getAllOwnersRequests(bookerId);
         assertThat(requestList, notNullValue());
         assertThat(requestList.size(), is(1));
@@ -110,7 +135,13 @@ class ItemRequestServiceImplDataJpaTest {
     }
 
     @Test
-    @DisplayName("Сценарий, тестирующий получение списка всех запросов всех пользователя на аренду")
+    @DisplayName("Сценарий, тестирующий получение списка всех запросов несуществующего пользователя на аренду")
+    void getAllOwnersRequestsOwnerNotFoundTest() {
+        assertThrows(EntityNotFoundException.class, () -> itemRequestService.getAllOwnersRequests(99999L));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий получение списка всех запросов всех пользователей на аренду")
     void getAllRequestTest() {
         var userId = user.getId();
         itemService.add(item, userId).getId();
@@ -121,5 +152,11 @@ class ItemRequestServiceImplDataJpaTest {
         assertThat(itemRequest, is(notNullValue()));
         assertThat(itemRequest.getId(), is(request.getId()));
         assertThat(itemRequest.getDescription(), is(request.getDescription()));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий получение списка всех запросов всех пользователей, запрашивающий не существует")
+    void getAllRequestWithoutUserTest() {
+        assertThrows(EntityNotFoundException.class, () -> itemRequestService.getAllRequest(99999L));
     }
 }

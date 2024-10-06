@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.EntityAccessDeniedException;
 import ru.practicum.shareit.exception.EntityNotFoundException;
+import ru.practicum.shareit.exception.EntityRuntimeErrorException;
 import ru.practicum.shareit.model.booking.Booking;
 import ru.practicum.shareit.model.booking.BookingService;
 import ru.practicum.shareit.model.booking.BookingServiceImpl;
@@ -35,7 +37,7 @@ import static org.hamcrest.Matchers.notNullValue;
         UserMapperImpl.class})
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @DisplayName("Набор интеграционных тестов сервиса 'работы с вещами'")
-class ItemServiceImplDataJpaTest {
+class ItemServiceImplTest {
     private final ItemService itemService;
     private final UserService userService;
     private final BookingService bookingService;
@@ -173,6 +175,86 @@ class ItemServiceImplDataJpaTest {
         listComments = itemService.get(itemId).getComments();
         assertThat(listComments.size(), is(1));
         assertThat(listComments.getFirst().authorName(), is(booker.getName()));
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий добавление комментария к предмету, предмет не существует")
+    void addCommentWithNotAvailableItemTest() {
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> itemService.addComment(bookerId, 9999L,
+                        new CommentDtoCreate("Ура!"))
+        );
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий добавление комментария к предмету, автор коммента не существует")
+    void addCommentWithNotAvailableAuthorTest() {
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> itemService.addComment(999L, 1L,
+                        new CommentDtoCreate("Ура!"))
+        );
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий добавление комментария к предмету, на предмет не было запросов на аренду")
+    void addCommentWithoutBookingTest() {
+        var item = new Item(0L, "item", "desc", true, null, null);
+        Long itemId = itemService.add(item, userId).getId();
+        Assertions.assertThrows(EntityNotFoundException.class,
+                () -> itemService.addComment(bookerId, itemId,
+                        new CommentDtoCreate("Ура!"))
+        );
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий добавление комментария к предмету, пользователь не получал approve от владельца")
+    void addCommentWithoutApproveTest() {
+        var item = new Item(0L, "item", "desc", true, null, null);
+        Long itemId = itemService.add(
+                item,
+                userId).getId();
+        var listComments = itemService.get(itemId).getComments();
+        assertThat(listComments.isEmpty(), is(true));
+        User booker = new User(bookerId,"booker", "booker@yandex.ru");
+        var booking = bookingService.add(
+                new Booking(
+                        0L,
+                        Instant.now(Clock.systemUTC()).minus(2, ChronoUnit.DAYS),
+                        Instant.now(Clock.systemUTC()).minus(1, ChronoUnit.DAYS),
+                        item,
+                        booker,
+                        BookingStatus.WAITING),
+                itemId, bookerId);
+        Assertions.assertThrows(EntityAccessDeniedException.class,
+                () -> itemService.addComment(bookerId, itemId,
+                        new CommentDtoCreate("Ура!"))
+        );
+    }
+
+    @Test
+    @DisplayName("Сценарий, тестирующий добавление комментария к предмету, неверные сроки аренды предмета")
+    void addCommentWithIncorrectDateTimeTest() {
+        var item = new Item(0L, "item", "desc", true, null, null);
+        Long itemId = itemService.add(
+                item,
+                userId).getId();
+        var listComments = itemService.get(itemId).getComments();
+        assertThat(listComments.isEmpty(), is(true));
+        User booker = new User(bookerId,"booker", "booker@yandex.ru");
+        var booking = bookingService.add(
+                new Booking(
+                        0L,
+                        Instant.now(Clock.systemUTC()).plus(1, ChronoUnit.DAYS),
+                        Instant.now(Clock.systemUTC()).plus(2, ChronoUnit.DAYS),
+                        item,
+                        booker,
+                        BookingStatus.WAITING),
+                itemId, bookerId);
+        bookingService.approve(booking.getId(), userId, true);
+        Assertions.assertThrows(EntityRuntimeErrorException.class,
+                () -> itemService.addComment(bookerId, itemId,
+                        new CommentDtoCreate("Ура!"))
+        );
     }
 
 }

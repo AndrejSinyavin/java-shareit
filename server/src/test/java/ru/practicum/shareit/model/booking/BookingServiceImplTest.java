@@ -32,7 +32,7 @@ import static org.hamcrest.Matchers.notNullValue;
         UserMapperImpl.class})
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @DisplayName("Набор интеграционных тестов сервиса 'бронирование вещей'")
-class BookingServiceImplDataJpaTest {
+class BookingServiceImplTest {
     private final ItemService itemService;
     private final UserService userService;
     private final BookingService bookingService;

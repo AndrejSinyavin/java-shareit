@@ -35,7 +35,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @ExtendWith(MockitoExtension.class)
 @Import({ItemMapper.class, ItemMapperImpl.class})
-class ItemControllerMockTest {
+class ItemControllerTest {
     @Mock
     private ItemService itemService;
 
