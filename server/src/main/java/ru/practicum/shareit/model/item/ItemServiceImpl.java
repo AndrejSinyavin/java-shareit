@@ -19,10 +19,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Optional;
-
-import static java.time.ZoneOffset.UTC;
 
 /**
  * Реализация интерфейса {@link ItemService} для работы с 'вещами'
@@ -39,7 +36,6 @@ public class ItemServiceImpl implements ItemService {
     static String ACCESS_DENIED = "Пользователь не является владельцем 'предмета' ID: ";
     static String USER_NOT_CREATE_BOOKING = "Пользователь не делал запроса на аренду предмета ";
     static String USER_NOT_USE_ITEM = "Пользователь еще не начал пользоваться предметом ";
-    static String USER_NOT_FINISHED_USE_ITEM = "Пользователь еще не закончил пользоваться предметом ";
     static String OWNER_NOT_APPROVE_BOOKING = "Владелец не разрешал пользователю пользоваться предметом ";
     String thisService = this.getClass().getSimpleName();
     ItemRepository itemRepository;

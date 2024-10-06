@@ -11,14 +11,12 @@ import ru.practicum.shareit.model.item.Item;
 import ru.practicum.shareit.model.item.ItemRepository;
 import ru.practicum.shareit.model.user.UserRepository;
 
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.model.booking.BookingStatus.APPROVED;
-import static ru.practicum.shareit.model.booking.BookingStatus.REJECTED;
 import static ru.practicum.shareit.model.booking.BookingStatus.WAITING;
 
 /**
@@ -29,14 +27,11 @@ import static ru.practicum.shareit.model.booking.BookingStatus.WAITING;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingServiceImpl implements BookingService {
     static String ID = "ID ";
-    static String ACCESS_DENIED = "Отказано в доступе";
     static String ITEM_NOT_FOUND = "'Предмет' не найден в репозитории";
     static String ITEM_UNAVAILABLE = "'Предмет' недоступен для бронирования";
     static String USER_NOT_FOUND = "'Пользователь' не найден в репозитории";
-    static String USER_NOT_HAVE_ITEMS = "Не найдено вещей у пользователя";
     static String BOOKING_NOT_FOUND = "Запрос на 'бронирование' не найден в репозитории";
     static String USER_NOT_OWNER = "Пользователь не является владельцем 'предмета' ";
-    static String USER_NOT_BOOKER = "или не создавал этот запрос на бронирование";
     static String SAME_BOOKING_DATES = "Дата завершения бронирования не может совпадать с датой начала";
     String thisService = this.getClass().getSimpleName();
     ItemRepository itemRepository;
@@ -102,14 +97,8 @@ public class BookingServiceImpl implements BookingService {
             } else {
                 return booking;
             }
-        } else {
-            if (booking.getStatus().equals(WAITING)) {
-                booking.setStatus(REJECTED);
-                return bookingRepository.save(booking);
-            } else {
-                return booking;
-            }
         }
+        return booking;
     }
 
     /**
@@ -121,19 +110,7 @@ public class BookingServiceImpl implements BookingService {
      */
     @Override
     public Booking getBooking(Long bookingId, Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new EntityRuntimeErrorException(thisService, USER_NOT_FOUND, ID.concat(userId.toString()));
-        }
-        var booking = bookingRepository.findById(bookingId).orElseThrow(() ->
-                new EntityNotFoundException(thisService, BOOKING_NOT_FOUND, ID.concat(bookingId.toString()))
-        );
-        Long bookerId = booking.getBooker().getId();
-        Long ownerId = booking.getItem().getOwner().getId();
-        if (!Objects.equals(userId, bookerId) && !Objects.equals(userId, ownerId)) {
-            throw new EntityAccessDeniedException(thisService, ACCESS_DENIED, USER_NOT_OWNER.concat(USER_NOT_BOOKER));
-        } else {
-            return booking;
-        }
+        return bookingRepository.findById(bookingId).get();
     }
 
     /**
@@ -151,10 +128,6 @@ public class BookingServiceImpl implements BookingService {
         return switch (state) {
             case ALL -> bookingRepository.findAllByBookerIdIsOrderByStartDesc(userId);
             case WAITING -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, WAITING);
-            case REJECTED -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, REJECTED);
-            case CURRENT -> bookingRepository.findAllByBookerIdIsAndStatusIsOrderByStartDesc(userId, APPROVED);
-            case FUTURE -> bookingRepository.findAllByStartAfterOrderByStartDesc(Instant.now());
-            case PAST -> bookingRepository.findAllByEndBeforeOrderByStartDesc(Instant.now());
         };
     }
 
@@ -174,16 +147,9 @@ public class BookingServiceImpl implements BookingService {
                 .stream()
                 .map(Item::getId)
                 .collect(Collectors.toSet());
-        if (itemIds.isEmpty()) {
-            throw new EntityAccessDeniedException(thisService, ID.concat(ownerId.toString()), USER_NOT_HAVE_ITEMS);
-        }
         return switch (state) {
             case ALL -> bookingRepository.findAllByItemIdInOrderByStartDesc(itemIds);
             case WAITING -> bookingRepository.findAllByItemIdInAndStatusIsOrderByStartDesc(itemIds, WAITING);
-            case REJECTED -> bookingRepository.findAllByItemIdInAndStatusIsOrderByStartDesc(itemIds, REJECTED);
-            case CURRENT -> bookingRepository.findAllByItemIdInAndStatusIsOrderByStartDesc(itemIds, APPROVED);
-            case FUTURE -> bookingRepository.findAllByItemIdInAndStartAfterOrderByStartDesc(itemIds, Instant.now());
-            case PAST -> bookingRepository.findAllByItemIdInAndEndBeforeOrderByStartDesc(itemIds, Instant.now());
         };
     }
 
