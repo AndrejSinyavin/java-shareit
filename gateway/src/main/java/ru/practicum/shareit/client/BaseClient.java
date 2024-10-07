@@ -14,6 +14,7 @@ import java.util.Map;
 
 public class BaseClient {
     protected final RestTemplate rest;
+    protected HttpHeaders headers;
 
     public BaseClient(RestTemplate rest) {
         this.rest = rest;
@@ -100,7 +101,7 @@ public class BaseClient {
     }
 
     private HttpHeaders defaultHeaders(Long userId) {
-        HttpHeaders headers = new HttpHeaders();
+        headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_JSON));
         if (userId != null) {
